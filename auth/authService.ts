@@ -1,17 +1,23 @@
-import type { User, UserRole } from '../types';
+import type { User, UserRole, SmtpConfig } from '../types';
 // FIX: Import TranslationKeys to provide type safety for auth result messages.
 import type { TranslationKeys } from '../contexts/I18nContext';
 
 const USERS_KEY = 'users';
 const SESSION_KEY = 'currentUser';
 const VERIFICATION_CODE_KEY = 'verificationCode';
+const SMTP_CONFIG_KEY = 'smtpConfig';
 
 const pseudoHash = (password: string): string => {
   return `hashed_${password}_${password.split('').reverse().join('')}`;
 };
 
 // FIX: Update messageKey to use TranslationKeys type and export AuthResult for use in other components.
-export type AuthResult = { success: boolean, messageKey: TranslationKeys, user?: User | null };
+export type AuthResult = { 
+  success: boolean, 
+  messageKey: TranslationKeys, 
+  user?: User | null,
+  verificationCode?: string 
+};
 
 class AuthService {
   private users: User[] = [];
@@ -60,9 +66,16 @@ class AuthService {
     
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     localStorage.setItem(`${VERIFICATION_CODE_KEY}_${email}`, code);
-    console.log(`Verification code for ${email}: ${code}`);
-    
-    return { success: true, messageKey: 'auth.success.register' };
+
+    const smtpConfig = localStorage.getItem(SMTP_CONFIG_KEY);
+    if (smtpConfig) {
+      // Simulate sending email
+      return { success: true, messageKey: 'auth.success.registerSmtp', verificationCode: code };
+    } else {
+      // Fallback to console log
+      console.log(`Verification code for ${email}: ${code}`);
+      return { success: true, messageKey: 'auth.success.register' };
+    }
   }
   
   verify(email: string, code: string): Omit<AuthResult, 'user'> {

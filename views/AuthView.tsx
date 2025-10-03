@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { authService, type AuthResult } from '../auth/authService';
 import type { User } from '../types';
 import { useI18n } from '../contexts/I18nContext';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 interface AuthViewProps {
   onLoginSuccess: (user: User) => void;
@@ -22,7 +23,12 @@ const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
   // FIX: Use the imported AuthResult type for the result parameter to ensure messageKey is correctly typed.
   const handleAuthResult = (result: AuthResult | Omit<AuthResult, 'user'>) => {
       if (result.success) {
-          setMessage(t(result.messageKey));
+          let successMsg = t(result.messageKey);
+          if ('verificationCode' in result && result.verificationCode) {
+              successMsg = t(result.messageKey, { code: result.verificationCode });
+          }
+          setMessage(successMsg);
+
           // FIX: Check for user property before accessing it.
           if ('user' in result && result.user) {
             onLoginSuccess(result.user);
@@ -125,7 +131,10 @@ const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col justify-center items-center p-4">
+    <div className="min-h-screen bg-gray-900 flex flex-col justify-center items-center p-4 relative">
+        <div className="absolute top-4 right-4 z-10">
+          <LanguageSwitcher />
+        </div>
         <div className="mb-6 text-center">
             <h1 className="text-4xl font-bold text-cyan-400">{t('auth.mainTitle')}</h1>
         </div>

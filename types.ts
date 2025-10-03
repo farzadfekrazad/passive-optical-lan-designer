@@ -10,6 +10,13 @@ export interface User {
   verified: boolean;
 }
 
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+}
+
 export interface OltSfpOption {
   name: string;
   txPower: number; // in dBm
@@ -51,7 +58,7 @@ export interface OntDevice {
   fxsPorts: number;
   wifi: {
     standard: string; // e.g., '802.11ac', '802.11ax'
-    bands: string; // e.g., '2.4GHz', '2.4/5GHz'
+    bands: string; // e.g., '2.4/5GHz'
   } | null;
 }
 

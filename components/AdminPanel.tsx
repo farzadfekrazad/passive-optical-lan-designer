@@ -4,6 +4,7 @@ import DeviceEditModal from './DeviceEditModal';
 import ImportExport from './ImportExport';
 import UserManagement from './UserManagement';
 import TranslationEditor from './TranslationEditor';
+import SmtpSettings from './SmtpSettings';
 import { useI18n } from '../contexts/I18nContext';
 
 interface AdminPanelProps {
@@ -18,7 +19,7 @@ interface AdminPanelProps {
   onCatalogImport: (data: { olts: OltDevice[], onts: OntDevice[] }) => void;
 }
 
-type ActiveTab = 'devices' | 'users' | 'translations';
+type ActiveTab = 'devices' | 'users' | 'translations' | 'settings';
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDevices, users, setUsers, onUpdate, onAdd, onDelete, onCatalogImport }) => {
   const { t } = useI18n();
@@ -153,6 +154,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDev
             <button onClick={() => setActiveTab('translations')} className={`px-4 py-2 text-lg font-semibold ${activeTab === 'translations' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>
                 {t('admin.manageTranslations')}
             </button>
+            <button onClick={() => setActiveTab('settings')} className={`px-4 py-2 text-lg font-semibold ${activeTab === 'settings' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>
+                {t('admin.manageSettings')}
+            </button>
            </>
         )}
       </div>
@@ -176,6 +180,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDev
 
       {activeTab === 'translations' && currentUser.role === 'admin' && (
           <TranslationEditor />
+      )}
+
+      {activeTab === 'settings' && currentUser.role === 'admin' && (
+          <SmtpSettings />
       )}
 
       {modalOpen && (
