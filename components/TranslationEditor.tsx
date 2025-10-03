@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useI18n } from '../contexts/I18nContext';
 import faDefaults from '../i18n/locales/fa';
+import enTranslations from '../i18n/locales/en';
 
 const TranslationEditor: React.FC = () => {
   const { getRawTranslations, saveCustomTranslations, t } = useI18n();
@@ -32,9 +33,13 @@ const TranslationEditor: React.FC = () => {
   };
 
   const filteredKeys = useMemo(() => {
+    const enKeys = enTranslations as Record<string, string>;
+    const searchFilter = filter.toLowerCase();
+    
     return Object.keys(translations).filter(key => 
-      key.toLowerCase().includes(filter.toLowerCase()) || 
-      translations[key].toLowerCase().includes(filter.toLowerCase())
+      key.toLowerCase().includes(searchFilter) || 
+      (translations[key] && translations[key].toLowerCase().includes(searchFilter)) ||
+      (enKeys[key] && enKeys[key].toLowerCase().includes(searchFilter))
     ).sort();
   }, [translations, filter]);
 
@@ -60,13 +65,23 @@ const TranslationEditor: React.FC = () => {
       </div>
 
       <div className="space-y-2 max-h-[60vh] overflow-y-auto p-1">
+        {/* Headers */}
+        <div className="grid grid-cols-12 gap-4 items-center bg-gray-900 p-2 rounded-md sticky top-0 z-10">
+            <h3 className="col-span-3 text-sm font-bold text-gray-300 uppercase">{t('translationEditor.keyHeader')}</h3>
+            <h3 className="col-span-4 text-sm font-bold text-gray-300 uppercase">{t('translationEditor.englishHeader')}</h3>
+            <h3 className="col-span-5 text-sm font-bold text-gray-300 uppercase">{t('translationEditor.persianHeader')}</h3>
+        </div>
+
         {filteredKeys.map(key => (
-          <div key={key} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center bg-gray-900/50 p-2 rounded">
-            <label className="text-sm text-gray-400 font-mono break-all self-start pt-1">{key}</label>
+          <div key={key} className="grid grid-cols-12 gap-4 items-start bg-gray-900/50 p-2 rounded">
+            <label className="col-span-3 text-sm text-gray-400 font-mono break-all self-start pt-1">{key}</label>
+            <p className="col-span-4 text-sm text-gray-300 bg-gray-700/50 p-2 rounded-md min-h-[38px]">
+                {enTranslations[key as keyof typeof enTranslations]}
+            </p>
             <textarea
               value={translations[key]}
               onChange={(e) => handleChange(key, e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 rounded-md py-1 px-2 text-white resize-y"
+              className="col-span-5 w-full bg-gray-700 border border-gray-600 rounded-md py-1 px-2 text-white resize-y"
               rows={1}
             />
           </div>
