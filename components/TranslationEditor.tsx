@@ -1,30 +1,60 @@
-import React, { useState, useMemo } from 'react';
+
+import React, { useState, useMemo, useEffect } from 'react';
 import { useI18n } from '../contexts/I18nContext';
 import faDefaults from '../i18n/locales/fa';
 import enTranslations from '../i18n/locales/en';
+import { authService } from '../auth/authService';
 
 const TranslationEditor: React.FC = () => {
-  const { getRawTranslations, saveCustomTranslations, t } = useI18n();
-  const [translations, setTranslations] = useState(() => getRawTranslations('fa'));
+  const { t, saveCustomTranslations, getRawTranslations } = useI18n();
+  const [translations, setTranslations] = useState<Record<string, string>>({});
   const [filter, setFilter] = useState('');
-
-  const handleSave = () => {
-    const customTranslations: Record<string, string> = {};
-    for (const key in translations) {
-        if (translations[key] !== faDefaults[key as keyof typeof faDefaults]) {
-            customTranslations[key] = translations[key];
-        }
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const fetchTranslations = async () => {
+    setIsLoading(true);
+    const res = await fetch('http://localhost:3001/api/settings/translations/fa', {
+        headers: authService.getAuthHeaders(),
+    });
+    if (res.ok) {
+        const customTranslations = await res.json();
+        // Update context first
+        saveCustomTranslations(customTranslations);
+        // Then update local state for editing
+        setTranslations({ ...faDefaults, ...customTranslations });
     }
-    saveCustomTranslations(customTranslations);
-    alert(t('translationEditor.saveSuccess'));
-    // Force a re-render in the current component with the latest from context
-    setTranslations(getRawTranslations('fa'));
+    setIsLoading(false);
+  }
+
+  useEffect(() => {
+    fetchTranslations();
+  }, []);
+
+
+  const handleSave = async () => {
+    const res = await fetch('http://localhost:3001/api/settings/translations/fa', {
+        method: 'POST',
+        headers: { ...authService.getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(translations),
+    });
+    if (res.ok) {
+        const custom = await res.json();
+        saveCustomTranslations(custom);
+        setTranslations({ ...faDefaults, ...custom });
+        alert(t('translationEditor.saveSuccess'));
+    }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
       if (window.confirm(t('translationEditor.resetConfirm'))) {
-          saveCustomTranslations({});
-          setTranslations(faDefaults);
+          const res = await fetch('http://localhost:3001/api/settings/translations/fa', {
+            method: 'DELETE',
+            headers: authService.getAuthHeaders(),
+          });
+          if (res.ok) {
+            saveCustomTranslations({});
+            setTranslations(faDefaults);
+          }
       }
   };
 
@@ -42,6 +72,10 @@ const TranslationEditor: React.FC = () => {
       (enKeys[key] && enKeys[key].toLowerCase().includes(searchFilter))
     ).sort();
   }, [translations, filter]);
+  
+  if (isLoading) {
+      return <div>{t('app.loading')}</div>
+  }
 
   return (
     <div className="bg-gray-800 p-4 rounded-lg shadow-lg">

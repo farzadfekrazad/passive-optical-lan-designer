@@ -1,50 +1,77 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import type { User, UserRole } from '../types';
 import { authService } from '../auth/authService';
 import { useI18n } from '../contexts/I18nContext';
 
 interface UserManagementProps {
-    users: User[];
-    setUsers: React.Dispatch<React.SetStateAction<User[]>>;
+    initialUsers: User[];
 }
 
-const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers }) => {
+const UserManagement: React.FC<UserManagementProps> = ({ initialUsers }) => {
     const { t } = useI18n();
+    const [users, setUsers] = useState<User[]>(initialUsers);
     const [isAdding, setIsAdding] = useState(false);
     const [newUser, setNewUser] = useState({ email: '', password: '', role: 'user' as UserRole });
+    const [error, setError] = useState('');
 
-    const handleAddUser = (e: React.FormEvent) => {
+    useEffect(() => {
+        setUsers(initialUsers);
+    }, [initialUsers]);
+
+    const fetchUsers = async () => {
+        const res = await fetch('http://localhost:3001/api/users', { headers: authService.getAuthHeaders() });
+        if(res.ok) {
+            const data = await res.json();
+            setUsers(data);
+        }
+    }
+
+    const handleAddUser = async (e: React.FormEvent) => {
         e.preventDefault();
-        const result = authService.addUser(newUser.email, newUser.password, newUser.role);
-        if (result.success) {
-            setUsers(authService.getAllUsers());
+        setError('');
+        const res = await fetch('http://localhost:3001/api/users', {
+            method: 'POST',
+            headers: { ...authService.getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify(newUser)
+        });
+        const data = await res.json();
+        if (res.ok) {
+            fetchUsers();
             setIsAdding(false);
             setNewUser({ email: '', password: '', role: 'user' });
         } else {
-            alert(t(result.messageKey));
+            setError(t(data.messageKey || 'server.error.generic'));
         }
     };
 
-    const handleDeleteUser = (userId: string) => {
+    const handleDeleteUser = async (userId: string) => {
         if(window.confirm(t('userManagement.deleteConfirm'))) {
-            const result = authService.deleteUser(userId);
-            if (result.success) {
-                setUsers(authService.getAllUsers());
+            const res = await fetch(`http://localhost:3001/api/users/${userId}`, {
+                method: 'DELETE',
+                headers: authService.getAuthHeaders()
+            });
+            if (res.ok) {
+                fetchUsers();
             } else {
-                alert(t(result.messageKey));
+                const data = await res.json();
+                alert(t(data.messageKey || 'server.error.generic'));
             }
         }
     }
 
-    const handleRoleChange = (userId: string, newRole: UserRole) => {
-        const user = users.find(u => u.id === userId);
-        if (user) {
-            const result = authService.updateUser({...user, role: newRole});
-            if(result.success) {
-                 setUsers(authService.getAllUsers());
-            } else {
-                alert(t(result.messageKey));
-            }
+    const handleRoleChange = async (userId: string, newRole: UserRole) => {
+        const res = await fetch(`http://localhost:3001/api/users/${userId}/role`, {
+            method: 'PUT',
+            headers: { ...authService.getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: newRole })
+        });
+
+        if(res.ok) {
+             fetchUsers();
+        } else {
+            const data = await res.json();
+            alert(t(data.messageKey || 'server.error.generic'));
         }
     };
 
@@ -56,7 +83,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers }) => {
                     {t('userManagement.addUser')}
                 </button>}
             </div>
-
+            {error && <p className="bg-red-900/50 text-red-300 p-3 rounded-md mb-4 text-sm">{error}</p>}
             {isAdding && (
                 <form onSubmit={handleAddUser} className="bg-gray-900/50 p-4 rounded-md mb-4 space-y-4">
                     <h3 className="font-semibold text-lg text-gray-300">{t('userManagement.newUserFormTitle')}</h3>
@@ -103,7 +130,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, setUsers }) => {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-end">
-                                    <button onClick={() => handleDeleteUser(user.id)} className="font-medium text-red-500 hover:underline">{t('admin.delete')}</button>
+                                    <button onClick={() => handleDeleteUser(user.id)} disabled={user.role === 'admin'} className="font-medium text-red-500 hover:underline disabled:text-gray-500 disabled:cursor-not-allowed">{t('admin.delete')}</button>
                                 </td>
                             </tr>
                         ))}

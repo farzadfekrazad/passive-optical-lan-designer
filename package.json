@@ -10,7 +10,16 @@
   },
   "dependencies": {
     "react-dom": "^19.2.0",
-    "react": "^19.2.0"
+    "react": "^19.2.0",
+    "path": "^0.12.7",
+    "url": "^0.11.4",
+    "bcryptjs": "^3.0.2",
+    "process": "^0.11.10",
+    "jsonwebtoken": "^9.0.2",
+    "express": "^5.1.0",
+    "cors": "^2.8.5",
+    "knex": "^3.1.0",
+    "crypto": "^1.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

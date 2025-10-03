@@ -1,5 +1,5 @@
+
 import React, { useState } from 'react';
-// FIX: Import AuthResult for type safety with authService calls.
 import { authService, type AuthResult } from '../auth/authService';
 import type { User } from '../types';
 import { useI18n } from '../contexts/I18nContext';
@@ -19,8 +19,8 @@ const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
   const [verifyCode, setVerifyCode] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  // FIX: Use the imported AuthResult type for the result parameter to ensure messageKey is correctly typed.
   const handleAuthResult = (result: AuthResult | Omit<AuthResult, 'user'>) => {
       if (result.success) {
           let successMsg = t(result.messageKey);
@@ -29,7 +29,6 @@ const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
           }
           setMessage(successMsg);
 
-          // FIX: Check for user property before accessing it.
           if ('user' in result && result.user) {
             onLoginSuccess(result.user);
           }
@@ -38,34 +37,40 @@ const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
       }
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setMessage('');
-    const result = authService.login(email, password);
+    setIsLoading(true);
+    const result = await authService.login(email, password);
     handleAuthResult(result);
+    setIsLoading(false);
   };
   
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setMessage('');
-    const result = authService.register(email, password);
+    setIsLoading(true);
+    const result = await authService.register(email, password);
     handleAuthResult(result);
     if (result.success) {
       setMode('verify');
     }
+    setIsLoading(false);
   };
   
-  const handleVerify = (e: React.FormEvent) => {
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setMessage('');
-    const result = authService.verify(email, verifyCode);
+    setIsLoading(true);
+    const result = await authService.verify(email, verifyCode);
     handleAuthResult(result);
      if (result.success) {
       setMode('login');
     }
+    setIsLoading(false);
   };
   
   const renderForm = () => {
@@ -82,7 +87,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
               <label className="block text-sm font-medium text-gray-400 mb-1">{t('auth.password')}</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white" />
             </div>
-            <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded">{t('auth.registerButton')}</button>
+            <button type="submit" disabled={isLoading} className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500">{t('auth.registerButton')}</button>
             <p className="text-center text-sm text-gray-400">
               {t('auth.hasAccount')} <button type="button" onClick={() => setMode('login')} className="font-semibold text-cyan-400 hover:underline">{t('auth.loginLink')}</button>
             </p>
@@ -101,7 +106,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
               <label className="block text-sm font-medium text-gray-400 mb-1">{t('auth.verifyCode')}</label>
               <input type="text" value={verifyCode} onChange={e => setVerifyCode(e.target.value)} required className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white" />
             </div>
-            <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded">{t('auth.loginButton')}</button>
+            <button type="submit" disabled={isLoading} className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500">{t('auth.verifyButton')}</button>
           </form>
         );
       case 'login':
@@ -117,7 +122,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
               <label className="block text-sm font-medium text-gray-400 mb-1">{t('auth.password')}</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white" />
             </div>
-            <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded">{t('auth.loginButton')}</button>
+            <button type="submit" disabled={isLoading} className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-500">{t('auth.loginButton')}</button>
             <p className="text-center text-sm text-gray-400">
               {t('auth.noAccount')} <button type="button" onClick={() => setMode('register')} className="font-semibold text-cyan-400 hover:underline">{t('auth.registerLink')}</button>
             </p>
@@ -141,6 +146,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
         <div className="w-full max-w-md bg-gray-800 p-8 rounded-lg shadow-2xl">
             {error && <p className="bg-red-900/50 text-red-300 p-3 rounded-md mb-4 text-sm">{error}</p>}
             {message && <p className="bg-green-900/50 text-green-300 p-3 rounded-md mb-4 text-sm">{message}</p>}
+            {isLoading && <div className="text-center text-gray-300 mb-4">{t('app.loading')}</div>}
             {renderForm()}
         </div>
     </div>

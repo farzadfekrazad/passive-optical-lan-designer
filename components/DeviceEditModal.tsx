@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import type { OltDevice, OntDevice, OltSfpOption, OltComponent, OntEthernetPort, PonTechnology, UplinkPort } from '../types';
 import DynamicListInput from './DynamicListInput';
@@ -6,7 +7,7 @@ import { useI18n } from '../contexts/I18nContext';
 interface DeviceEditModalProps {
   device: OltDevice | OntDevice | null;
   type: 'olt' | 'ont';
-  onSave: (device: OltDevice | OntDevice) => void;
+  onSave: (device: Omit<OltDevice, 'id'> | Omit<OntDevice, 'id'> | OltDevice | OntDevice) => void;
   onClose: () => void;
 }
 
@@ -15,7 +16,7 @@ const emptyOnt: Omit<OntDevice, 'id'> = { model: '', description: '', technology
 
 const DeviceEditModal: React.FC<DeviceEditModalProps> = ({ device, type, onSave, onClose }) => {
   const { t } = useI18n();
-  const [formData, setFormData] = useState<Omit<OltDevice, 'id'> | Omit<OntDevice, 'id'>>(() => {
+  const [formData, setFormData] = useState(() => {
     if (device) return device;
     return type === 'olt' ? emptyOlt : emptyOnt;
   });
@@ -50,7 +51,7 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({ device, type, onSave,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData as OltDevice | OntDevice);
+    onSave(formData);
   };
 
   const title = device ? t('modal.edit', { type: type.toUpperCase() }) : t('modal.add', { type: type.toUpperCase() });

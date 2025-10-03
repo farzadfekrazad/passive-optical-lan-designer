@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import type { SmtpConfig } from '../types';
 import { useI18n } from '../contexts/I18nContext';
-
-const SMTP_CONFIG_KEY = 'smtpConfig';
+import { authService } from '../auth/authService';
 
 const SmtpSettings: React.FC = () => {
     const { t } = useI18n();
@@ -13,16 +13,28 @@ const SmtpSettings: React.FC = () => {
         pass: '',
     });
     const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        try {
-            const storedConfig = localStorage.getItem(SMTP_CONFIG_KEY);
-            if (storedConfig) {
-                setConfig(JSON.parse(storedConfig));
+        const fetchSmtpConfig = async () => {
+            setIsLoading(true);
+            try {
+                const res = await fetch('http://localhost:3001/api/settings/smtp', {
+                    headers: authService.getAuthHeaders(),
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data) {
+                        setConfig(data);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch SMTP config", error);
+            } finally {
+                setIsLoading(false);
             }
-        } catch (error) {
-            console.error("Failed to parse SMTP config from localStorage", error);
-        }
+        };
+        fetchSmtpConfig();
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,15 +45,25 @@ const SmtpSettings: React.FC = () => {
         }));
     };
 
-    const handleSave = (e: React.FormEvent) => {
+    const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        localStorage.setItem(SMTP_CONFIG_KEY, JSON.stringify(config));
-        setMessage({ type: 'success', text: t('smtp.saveSuccess') });
+        setMessage(null);
+        const res = await fetch('http://localhost:3001/api/settings/smtp', {
+            method: 'POST',
+            headers: { ...authService.getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify(config),
+        });
+
+        if (res.ok) {
+            setMessage({ type: 'success', text: t('smtp.saveSuccess') });
+        } else {
+             setMessage({ type: 'error', text: t('server.error.generic') });
+        }
         setTimeout(() => setMessage(null), 3000);
     };
     
     const handleTest = () => {
-        // This is a simulation. In a real app, you'd use a library like Nodemailer on a backend.
+        // This is a simulation. In a real app, you'd have a backend endpoint for this.
         if (config.host && config.port > 0 && config.user) {
              setMessage({ type: 'success', text: t('smtp.testSuccess') });
         } else {
@@ -49,6 +71,10 @@ const SmtpSettings: React.FC = () => {
         }
          setTimeout(() => setMessage(null), 4000);
     };
+    
+    if (isLoading) {
+        return <div className="text-center">{t('app.loading')}</div>
+    }
 
     return (
         <div className="bg-gray-800 p-4 rounded-lg shadow-lg max-w-2xl mx-auto">

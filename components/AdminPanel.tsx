@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import type { OltDevice, OntDevice, User } from '../types';
 import DeviceEditModal from './DeviceEditModal';
@@ -11,17 +12,16 @@ interface AdminPanelProps {
   currentUser: User;
   oltDevices: OltDevice[];
   ontDevices: OntDevice[];
-  users: User[];
-  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
-  onUpdate: (type: 'olt' | 'ont', device: OltDevice | OntDevice) => void;
-  onAdd: (type: 'olt' | 'ont', device: OltDevice | OntDevice) => void;
-  onDelete: (type: 'olt' | 'ont', deviceId: string) => void;
-  onCatalogImport: (data: { olts: OltDevice[], onts: OntDevice[] }) => void;
+  users: User[]; // This will now be read-only display, management is in the component
+  onUpdate: (type: 'olt' | 'ont', device: OltDevice | OntDevice) => Promise<void>;
+  onAdd: (type: 'olt' | 'ont', device: Omit<OltDevice, 'id'> | Omit<OntDevice, 'id'>) => Promise<void>;
+  onDelete: (type: 'olt' | 'ont', deviceId: string) => Promise<void>;
+  onCatalogImport: (data: { olts: OltDevice[], onts: OntDevice[] }) => Promise<void>;
 }
 
 type ActiveTab = 'devices' | 'users' | 'translations' | 'settings';
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDevices, users, setUsers, onUpdate, onAdd, onDelete, onCatalogImport }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDevices, users, onUpdate, onAdd, onDelete, onCatalogImport }) => {
   const { t } = useI18n();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<OltDevice | OntDevice | null>(null);
@@ -44,20 +44,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDev
     setModalOpen(true);
   };
 
-  const handleSave = (device: OltDevice | OntDevice) => {
+  const handleSave = async (deviceData: Omit<OltDevice, 'id'> | Omit<OntDevice, 'id'> | OltDevice | OntDevice) => {
     if (isReadonly) return;
-    if (editingDevice) {
-      onUpdate(deviceType, device);
+    if (editingDevice && 'id' in deviceData) {
+      await onUpdate(deviceType, deviceData as OltDevice | OntDevice);
     } else {
-      onAdd(deviceType, { ...device, id: crypto.randomUUID() });
+      await onAdd(deviceType, deviceData as Omit<OltDevice, 'id'> | Omit<OntDevice, 'id'>);
     }
     setModalOpen(false);
   };
 
-  const handleDelete = (type: 'olt' | 'ont', deviceId: string) => {
+  const handleDelete = async (type: 'olt' | 'ont', deviceId: string) => {
     if (isReadonly) return;
     if (window.confirm(t('admin.deleteConfirm'))) {
-        onDelete(type, deviceId);
+        await onDelete(type, deviceId);
     }
   }
 
@@ -175,7 +175,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDev
       )}
       
       {activeTab === 'users' && currentUser.role === 'admin' && (
-          <UserManagement users={users} setUsers={setUsers} />
+          <UserManagement initialUsers={users} />
       )}
 
       {activeTab === 'translations' && currentUser.role === 'admin' && (
