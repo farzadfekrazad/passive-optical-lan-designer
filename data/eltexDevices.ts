@@ -8,6 +8,10 @@ export const initialOltDevices: OltDevice[] = [
     description: 'Chassis OLT with 2x PLC8 GPON Line Cards',
     technology: 'GPON',
     ponPorts: 16,
+    uplinkPorts: [
+      { type: '10G SFP+', count: 4 },
+      { type: '1G RJ45', count: 4 },
+    ],
     sfpOptions: [
       { name: 'GPON SFP B+', txPower: 3.0 },
       { name: 'GPON SFP C+', txPower: 5.0 },
@@ -25,6 +29,10 @@ export const initialOltDevices: OltDevice[] = [
     description: 'Station terminal LTP-8X, 8 ports GPON', 
     technology: 'GPON',
     ponPorts: 8,
+    uplinkPorts: [
+      { type: '10G SFP+', count: 2 },
+      { type: '1G Combo', count: 4 },
+    ],
     sfpOptions: [
       { name: 'GPON SFP B+', txPower: 3.5 },
       { name: 'GPON SFP C+', txPower: 5.5 },
@@ -37,6 +45,7 @@ export const initialOltDevices: OltDevice[] = [
     description: 'Station terminal LTP-16N, 16 GPON ports', 
     technology: 'GPON',
     ponPorts: 16,
+    uplinkPorts: [{ type: '10G SFP+', count: 8 }],
     sfpOptions: [
       { name: 'GPON SFP B+', txPower: 3.5 },
       { name: 'GPON SFP C+', txPower: 5.5 },
@@ -49,6 +58,7 @@ export const initialOltDevices: OltDevice[] = [
     description: 'Station terminal XGS-GPON LTX-8, 8 ports XGS-PON', 
     technology: 'XGS-PON',
     ponPorts: 8,
+    uplinkPorts: [{ type: '100G QSFP28', count: 4 }],
     sfpOptions: [
       { name: 'XGS-PON SFP N1', txPower: 5.0 },
       { name: 'XGS-PON SFP N2', txPower: 7.0 },

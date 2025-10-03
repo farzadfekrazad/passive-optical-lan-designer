@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import type { OltDevice, OntDevice, OltSfpOption, OltComponent, OntEthernetPort, PonTechnology } from '../types';
+import type { OltDevice, OntDevice, OltSfpOption, OltComponent, OntEthernetPort, PonTechnology, UplinkPort } from '../types';
 import DynamicListInput from './DynamicListInput';
 
 interface DeviceEditModalProps {
@@ -10,7 +10,7 @@ interface DeviceEditModalProps {
   onClose: () => void;
 }
 
-const emptyOlt: Omit<OltDevice, 'id'> = { model: '', description: '', technology: 'GPON', ponPorts: 8, sfpOptions: [{name: 'GPON SFP C+', txPower: 5.0}], components: [] };
+const emptyOlt: Omit<OltDevice, 'id'> = { model: '', description: '', technology: 'GPON', ponPorts: 8, uplinkPorts: [{type: '10G SFP+', count: 4}], sfpOptions: [{name: 'GPON SFP C+', txPower: 5.0}], components: [] };
 const emptyOnt: Omit<OntDevice, 'id'> = { model: '', description: '', technology: 'GPON', rxSensitivity: -28, ethernetPorts: [{type: '10/100/1000Base-T', count: 1}], fxsPorts: 0, wifi: null };
 
 const DeviceEditModal: React.FC<DeviceEditModalProps> = ({ device, type, onSave, onClose }) => {
@@ -66,6 +66,18 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({ device, type, onSave,
         <label htmlFor="ponPorts" className="block text-sm font-medium text-gray-400 mb-1">PON Ports</label>
         <input type="number" name="ponPorts" id="ponPorts" value={oltData.ponPorts} onChange={handleChange} required className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" />
       </div>
+       <DynamicListInput<UplinkPort>
+        label="Uplink Ports"
+        items={oltData.uplinkPorts}
+        onChange={(newUplinks) => setFormData(p => ({...(p as OltDevice), uplinkPorts: newUplinks}))}
+        newItem={{ type: '10G SFP+', count: 2 }}
+        renderItem={(item, onChange) => (
+          <div className="grid grid-cols-2 gap-2">
+            <input type="text" value={item.type} onChange={e => onChange('type', e.target.value)} placeholder="Type (e.g., 10G SFP+)" className="w-full bg-gray-600 border border-gray-500 rounded-md py-1 px-2 text-white" />
+            <input type="number" step="1" value={item.count} onChange={e => onChange('count', parseInt(e.target.value))} placeholder="Count" className="w-full bg-gray-600 border border-gray-500 rounded-md py-1 px-2 text-white" />
+          </div>
+        )}
+      />
       <DynamicListInput<OltSfpOption>
         label="SFP Options"
         items={oltData.sfpOptions}

@@ -37,3 +37,18 @@
     background-color: #eee !important;
   }
 }
+
+/* Fix for Expert Mode Toggle Switch */
+.toggle-checkbox {
+  @apply appearance-none;
+  transition: right 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  right: 1rem; /* Unchecked position */
+}
+
+.toggle-checkbox:checked {
+  right: 0rem; /* Checked position */
+}
+
+.toggle-checkbox:checked + .toggle-label {
+  @apply bg-cyan-600;
+}

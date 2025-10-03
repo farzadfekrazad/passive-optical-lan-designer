@@ -44,26 +44,23 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, o
             options={sfpOptions}
           />
         )}
-        <StaticDisplay label="PON Ports" value={parameters.ponPorts} />
-        <SelectInput 
-          label="Uplink Speed"
-          value={parameters.uplinkSpeed}
-          onChange={e => onChange('uplinkSpeed', e.target.value)}
-          options={['10G', '40G', '100G'].map(o => ({label: o, value: o}))}
-        />
+        <div className="bg-gray-900/50 p-3 rounded-md space-y-2 text-sm">
+            <StaticDisplay label="PON Ports" value={parameters.ponPorts} />
+            {selectedOlt?.uplinkPorts.map(p => <StaticDisplay key={p.type} label={`Uplink ${p.type}`} value={`${p.count} port(s)`} />)}
+        </div>
       </ParameterGroup>
       
       <ParameterGroup title="Optical Distribution Network (ODN)" defaultOpen={true}>
          <div className="flex items-center justify-between bg-gray-900/50 p-3 rounded-md">
           <label htmlFor="expertMode" className="text-sm font-medium text-gray-300">Expert Mode</label>
-          <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+          <div className="relative inline-block w-10 h-6 align-middle select-none">
               <input 
                   type="checkbox" 
                   name="expertMode" 
                   id="expertMode" 
                   checked={parameters.expertMode}
                   onChange={e => onChange('expertMode', e.target.checked)}
-                  className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                  className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-600 appearance-none cursor-pointer"
               />
               <label htmlFor="expertMode" className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
           </div>
@@ -122,7 +119,9 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, o
           value={parameters.ontId}
           onChange={e => onChange('ontId', e.target.value)}
           options={ontOptions}
+          disabled={ontOptions.length === 0}
         />
+        {ontOptions.length === 0 && <p className="text-xs text-yellow-400 p-2 bg-yellow-900/50 rounded-md">No compatible ONTs found for the selected OLT's technology.</p>}
         {selectedOnt && (
             <div className="bg-gray-900/50 p-3 rounded-md space-y-2 text-sm">
                 <StaticDisplay label="Technology" value={selectedOnt.technology} />

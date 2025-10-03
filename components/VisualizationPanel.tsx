@@ -36,8 +36,14 @@ const VisualizationPanel: React.FC<VisualizationPanelProps> = ({ parameters, sel
         splitterLoss = (SPLITTER_LOSS_MAP[splitterConfig.level1Ratio] || 0) + (SPLITTER_LOSS_MAP[splitterConfig.level2Ratio] || 0);
     }
     
-    const connectorLossTotal = (parameters.backboneSplices + parameters.dropSplices) * parameters.connectorLoss;
-    const spliceLossTotal = (parameters.backboneSplices + parameters.dropSplices) * parameters.spliceLoss;
+    // Expert mode uses separate splice counts, otherwise uses a total of 4 (2 backbone, 2 drop)
+    const totalSplices = expertMode ? (parameters.backboneSplices + parameters.dropSplices) : 4;
+    const spliceLossTotal = totalSplices * parameters.spliceLoss;
+
+    // Connector loss is fixed at 2 for simplicity in non-expert mode
+    const totalConnectors = expertMode ? (parameters.backboneSplices + parameters.dropSplices) : 2;
+    const connectorLossTotal = totalConnectors * parameters.connectorLoss;
+
     const safetyMargin = expertMode ? parameters.safetyMargin : 0;
     
     const totalLoss = fiberLoss + splitterLoss + connectorLossTotal + spliceLossTotal + safetyMargin;
@@ -92,10 +98,12 @@ const VisualizationPanel: React.FC<VisualizationPanelProps> = ({ parameters, sel
       <div className="flex-grow flex items-center justify-center min-h-[400px]">
         <div className="w-full flex items-center">
           {/* Uplink/Core */}
-          <div className="flex flex-col items-center gap-2 pr-4">
+          <div className="flex flex-col items-center gap-2 pr-4 text-center">
               <ServerIcon className="w-12 h-12 text-gray-400" />
               <p className="text-xs text-gray-500">Core Network</p>
-              <p className="text-xs font-mono">{parameters.uplinkSpeed}</p>
+              <div className="text-xs font-mono">
+                {selectedOlt?.uplinkPorts.map(p => <div key={p.type}>{p.count}x {p.type}</div>)}
+              </div>
           </div>
           <div className="w-16 border-t-2 border-dashed border-gray-600"></div>
 

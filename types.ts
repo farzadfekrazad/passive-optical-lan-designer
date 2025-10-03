@@ -1,5 +1,14 @@
 
 export type PonTechnology = 'GPON' | 'XGS-PON';
+export type UserRole = 'user' | 'admin' | 'readonly_admin';
+
+export interface User {
+  id: string;
+  email: string;
+  passwordHash: string; // In a real app, never store plain text passwords
+  role: UserRole;
+  verified: boolean;
+}
 
 export interface OltSfpOption {
   name: string;
@@ -11,12 +20,18 @@ export interface OltComponent {
   quantity: number;
 }
 
+export interface UplinkPort {
+  type: string; // e.g., '10G SFP+', '100G QSFP28'
+  count: number;
+}
+
 export interface OltDevice {
   id: string;
   model: string;
   description: string;
   technology: PonTechnology;
   ponPorts: number;
+  uplinkPorts: UplinkPort[];
   sfpOptions: OltSfpOption[];
   components: OltComponent[]; // For chassis-based OLTs
 }
@@ -52,8 +67,7 @@ export interface PolDesignParameters {
   // Central Office / MDF
   oltId: string;
   sfpSelection: string; // Name of the selected SFP
-  ponPorts: number;
-  uplinkSpeed: '10G' | '40G' | '100G';
+  ponPorts: number; // Derived from OLT
   oltTxPower: number; // in dBm, derived from sfpSelection
 
   // Optical Distribution Network (ODN)
@@ -81,7 +95,6 @@ const DEFAULT_ONT_ID = 'c1e4f7a8-3b9d-4e6f-8a2c-1d5e7b9a3c1f'; // NTU-RG-5421G-W
 
 export const initialParameters: Omit<PolDesignParameters, 'oltTxPower' | 'ponPorts' | 'ontRxSensitivity' | 'sfpSelection'> & { oltId: string; ontId: string } = {
   oltId: DEFAULT_OLT_ID,
-  uplinkSpeed: '10G',
 
   backboneDistance: 500,
   splitterConfig: {

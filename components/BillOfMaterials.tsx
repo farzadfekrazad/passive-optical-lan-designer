@@ -29,7 +29,9 @@ const BillOfMaterials: React.FC<BillOfMaterialsProps> = ({ parameters, selectedO
     } else { // Cascaded
         const l1Ratio = parseInt(parameters.splitterConfig.level1Ratio.split(':')[1]);
         const l2Ratio = parseInt(parameters.splitterConfig.level2Ratio.split(':')[1]);
-        const l1Count = Math.ceil(totalOnts / (l1Ratio * l2Ratio));
+        const totalSplit = l1Ratio * l2Ratio;
+        if (totalSplit === 0) return [];
+        const l1Count = Math.ceil(totalOnts / totalSplit);
         const l2Count = l1Count * l1Ratio;
         return [
             { name: `PLC Splitter ${parameters.splitterConfig.level1Ratio} (L1)`, quantity: l1Count },
@@ -37,7 +39,7 @@ const BillOfMaterials: React.FC<BillOfMaterialsProps> = ({ parameters, selectedO
         ];
     }
   };
-
+  
   const bomItems = [
     // OLT and its components
     ...(selectedOlt.components.length > 0 
@@ -45,7 +47,9 @@ const BillOfMaterials: React.FC<BillOfMaterialsProps> = ({ parameters, selectedO
         : [{ name: selectedOlt.model, quantity: 1}]
     ),
     // SFP Modules
-    { name: `SFP Module: ${parameters.sfpSelection}`, quantity: parameters.ponPorts },
+    { name: `PON SFP Module: ${parameters.sfpSelection}`, quantity: parameters.ponPorts },
+    // Uplink Modules
+    ...selectedOlt.uplinkPorts.map(p => ({name: `Uplink Module: ${p.type}`, quantity: p.count})),
     // Splitters
     ...splitterItems(),
     // ONTs

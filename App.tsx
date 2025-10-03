@@ -1,6 +1,6 @@
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { PolDesignParameters, initialParameters, OltDevice, OntDevice } from './types';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { PolDesignParameters, initialParameters, OltDevice, OntDevice, User } from './types';
 import { initialOltDevices, initialOntDevices } from './data/eltexDevices';
 import Header from './components/Header';
 import ParameterPanel from './components/ParameterPanel';
@@ -8,12 +8,16 @@ import VisualizationPanel from './components/VisualizationPanel';
 import AdminPanel from './components/AdminPanel';
 import BillOfMaterials from './components/BillOfMaterials';
 import useLocalStorage from './hooks/useLocalStorage';
+import AuthView from './views/AuthView';
+import { authService } from './auth/authService';
 
 const App: React.FC = () => {
+  const [user, setUser] = useState<User | null>(authService.getCurrentUser());
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
 
   const [oltDevices, setOltDevices] = useLocalStorage<OltDevice[]>('oltDevices', initialOltDevices);
   const [ontDevices, setOntDevices] = useLocalStorage<OntDevice[]>('ontDevices', initialOntDevices);
+  const [users, setUsers] = useLocalStorage<User[]>('users', []);
 
   const [parameters, setParameters] = useState<PolDesignParameters>(() => {
     const defaultOlt = oltDevices.find(o => o.id === initialParameters.oltId) || oltDevices[0];
@@ -31,6 +35,27 @@ const App: React.FC = () => {
       ontRxSensitivity: defaultOnt?.rxSensitivity || 0,
     };
   });
+  
+  useEffect(() => {
+    // This effect ensures the app state reacts to login/logout events
+    const currentUser = authService.getCurrentUser();
+    setUser(currentUser);
+    // If the logged-out user was an admin, close the panel
+    if (!currentUser || currentUser.role === 'user') {
+      setIsAdminPanelOpen(false);
+    }
+  }, []);
+
+
+  const handleLoginSuccess = (loggedInUser: User) => {
+    setUser(loggedInUser);
+  };
+  
+  const handleLogout = () => {
+    authService.logout();
+    setUser(null);
+    setIsAdminPanelOpen(false); // Close admin panel on logout
+  };
 
   const handleParameterChange = useCallback((key: keyof PolDesignParameters, value: any) => {
     setParameters(prevParams => {
@@ -44,18 +69,15 @@ const App: React.FC = () => {
                 newParams.sfpSelection = firstSfp?.name || '';
                 newParams.oltTxPower = firstSfp?.txPower || 0;
 
-                // **Technology Filtering Logic**
                 const compatibleOnts = ontDevices.filter(ont => ont.technology === selectedOlt.technology);
                 const currentOnt = ontDevices.find(ont => ont.id === newParams.ontId);
 
-                // If current ONT is not compatible, switch to the first compatible one
                 if (!currentOnt || currentOnt.technology !== selectedOlt.technology) {
                     const newOnt = compatibleOnts[0];
                     if (newOnt) {
                         newParams.ontId = newOnt.id;
                         newParams.ontRxSensitivity = newOnt.rxSensitivity;
                     } else {
-                        // No compatible ONTs found
                         newParams.ontId = '';
                         newParams.ontRxSensitivity = 0;
                     }
@@ -116,6 +138,12 @@ const App: React.FC = () => {
       }
     }
   };
+  
+  const handleCatalogImport = (data: { olts: OltDevice[], onts: OntDevice[] }) => {
+    setOltDevices(data.olts);
+    setOntDevices(data.onts);
+    alert('Device catalog imported successfully!');
+  };
 
   const selectedOlt = useMemo(() => oltDevices.find(o => o.id === parameters.oltId), [oltDevices, parameters.oltId]);
   const selectedOnt = useMemo(() => ontDevices.find(o => o.id === parameters.ontId), [ontDevices, parameters.ontId]);
@@ -125,18 +153,30 @@ const App: React.FC = () => {
     return ontDevices.filter(ont => ont.technology === selectedOlt.technology);
   }, [selectedOlt, ontDevices]);
 
+  if (!user) {
+    return <AuthView onLoginSuccess={handleLoginSuccess} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 font-sans flex flex-col">
-      <Header onAdminClick={() => setIsAdminPanelOpen(!isAdminPanelOpen)} isAdminOpen={isAdminPanelOpen} />
+      <Header 
+        user={user} 
+        onLogout={handleLogout}
+        onAdminClick={() => setIsAdminPanelOpen(!isAdminPanelOpen)} 
+        isAdminOpen={isAdminPanelOpen} 
+      />
       <main className="flex-grow p-4 max-w-[1920px] mx-auto w-full">
         {isAdminPanelOpen ? (
           <AdminPanel 
+            currentUser={user}
             oltDevices={oltDevices}
             ontDevices={ontDevices}
+            users={users}
+            setUsers={setUsers}
             onAdd={handleDeviceAdd}
             onUpdate={handleDeviceUpdate}
             onDelete={handleDeviceDelete}
+            onCatalogImport={handleCatalogImport}
           />
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 h-full">
