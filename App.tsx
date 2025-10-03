@@ -16,9 +16,9 @@ const App: React.FC = () => {
   const [ontDevices, setOntDevices] = useLocalStorage<OntDevice[]>('ontDevices', initialOntDevices);
 
   const [parameters, setParameters] = useState<PolDesignParameters>(() => {
-    // Ensure initial parameters are valid against stored devices
     const defaultOlt = oltDevices.find(o => o.id === initialParameters.oltId) || oltDevices[0];
-    const defaultOnt = ontDevices.find(o => o.id === initialParameters.ontId) || ontDevices[0];
+    const compatibleOnts = ontDevices.filter(ont => ont.technology === defaultOlt.technology);
+    const defaultOnt = compatibleOnts.find(o => o.id === initialParameters.ontId) || compatibleOnts[0] || ontDevices[0];
     const defaultSfp = defaultOlt?.sfpOptions[0]?.name || '';
     
     return {
@@ -43,6 +43,23 @@ const App: React.FC = () => {
                 newParams.ponPorts = selectedOlt.ponPorts;
                 newParams.sfpSelection = firstSfp?.name || '';
                 newParams.oltTxPower = firstSfp?.txPower || 0;
+
+                // **Technology Filtering Logic**
+                const compatibleOnts = ontDevices.filter(ont => ont.technology === selectedOlt.technology);
+                const currentOnt = ontDevices.find(ont => ont.id === newParams.ontId);
+
+                // If current ONT is not compatible, switch to the first compatible one
+                if (!currentOnt || currentOnt.technology !== selectedOlt.technology) {
+                    const newOnt = compatibleOnts[0];
+                    if (newOnt) {
+                        newParams.ontId = newOnt.id;
+                        newParams.ontRxSensitivity = newOnt.rxSensitivity;
+                    } else {
+                        // No compatible ONTs found
+                        newParams.ontId = '';
+                        newParams.ontRxSensitivity = 0;
+                    }
+                }
             }
         }
         
@@ -58,13 +75,6 @@ const App: React.FC = () => {
             const selectedOnt = ontDevices.find(ont => ont.id === value);
             if (selectedOnt) {
                 newParams.ontRxSensitivity = selectedOnt.rxSensitivity;
-            }
-        }
-        
-        if (key === 'splitRatio') {
-            const maxOnts = parseInt(value.split(':')[1]);
-            if (newParams.ontsPerPonPort > maxOnts) {
-                newParams.ontsPerPonPort = maxOnts;
             }
         }
         
@@ -90,22 +100,31 @@ const App: React.FC = () => {
 
   const handleDeviceDelete = (type: 'olt' | 'ont', deviceId: string) => {
     if (type === 'olt') {
-      setOltDevices(prev => prev.filter(d => d.id !== deviceId));
+      const remainingOlts = oltDevices.filter(d => d.id !== deviceId);
+      setOltDevices(remainingOlts);
       if (parameters.oltId === deviceId) {
-        const fallbackOlt = oltDevices.find(d => d.id !== deviceId) || null;
+        const fallbackOlt = remainingOlts[0] || null;
         handleParameterChange('oltId', fallbackOlt?.id || '');
       }
     } else {
-      setOntDevices(prev => prev.filter(d => d.id !== deviceId));
+      const remainingOnts = ontDevices.filter(d => d.id !== deviceId);
+      setOntDevices(remainingOnts);
       if (parameters.ontId === deviceId) {
-         const fallbackOnt = ontDevices.find(d => d.id !== deviceId) || null;
-         handleParameterChange('ontId', fallbackOnt?.id || '');
+         const selectedOlt = oltDevices.find(olt => olt.id === parameters.oltId);
+         const compatibleFallbackOnt = remainingOnts.find(o => o.technology === selectedOlt?.technology) || null;
+         handleParameterChange('ontId', compatibleFallbackOnt?.id || '');
       }
     }
   };
 
   const selectedOlt = useMemo(() => oltDevices.find(o => o.id === parameters.oltId), [oltDevices, parameters.oltId]);
   const selectedOnt = useMemo(() => ontDevices.find(o => o.id === parameters.ontId), [ontDevices, parameters.ontId]);
+  
+  const compatibleOnts = useMemo(() => {
+    if (!selectedOlt) return ontDevices;
+    return ontDevices.filter(ont => ont.technology === selectedOlt.technology);
+  }, [selectedOlt, ontDevices]);
+
 
   return (
     <div className="min-h-screen bg-gray-900 font-sans flex flex-col">
@@ -126,7 +145,7 @@ const App: React.FC = () => {
                 parameters={parameters} 
                 onChange={handleParameterChange}
                 oltDevices={oltDevices}
-                ontDevices={ontDevices}
+                ontDevices={compatibleOnts}
                 selectedOlt={selectedOlt}
                 selectedOnt={selectedOnt}
               />

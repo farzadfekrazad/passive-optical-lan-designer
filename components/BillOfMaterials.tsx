@@ -19,9 +19,24 @@ const BillOfMaterials: React.FC<BillOfMaterialsProps> = ({ parameters, selectedO
   }
   
   const totalOnts = parameters.ponPorts * parameters.ontsPerPonPort;
-  const splitRatioNum = parseInt(parameters.splitRatio.split(':')[1]);
-  const splittersNeeded = Math.ceil(totalOnts / splitRatioNum);
   const totalFiberLength = (parameters.backboneDistance * parameters.ponPorts) + (parameters.dropCableLength * totalOnts);
+
+  const splitterItems = () => {
+    if (parameters.splitterConfig.type === 'Centralized') {
+        const ratio = parseInt(parameters.splitterConfig.level1Ratio.split(':')[1]);
+        const count = Math.ceil(totalOnts / ratio);
+        return [{ name: `PLC Splitter ${parameters.splitterConfig.level1Ratio}`, quantity: count }];
+    } else { // Cascaded
+        const l1Ratio = parseInt(parameters.splitterConfig.level1Ratio.split(':')[1]);
+        const l2Ratio = parseInt(parameters.splitterConfig.level2Ratio.split(':')[1]);
+        const l1Count = Math.ceil(totalOnts / (l1Ratio * l2Ratio));
+        const l2Count = l1Count * l1Ratio;
+        return [
+            { name: `PLC Splitter ${parameters.splitterConfig.level1Ratio} (L1)`, quantity: l1Count },
+            { name: `PLC Splitter ${parameters.splitterConfig.level2Ratio} (L2)`, quantity: l2Count }
+        ];
+    }
+  };
 
   const bomItems = [
     // OLT and its components
@@ -32,7 +47,7 @@ const BillOfMaterials: React.FC<BillOfMaterialsProps> = ({ parameters, selectedO
     // SFP Modules
     { name: `SFP Module: ${parameters.sfpSelection}`, quantity: parameters.ponPorts },
     // Splitters
-    { name: `PLC Splitter ${parameters.splitRatio}`, quantity: splittersNeeded },
+    ...splitterItems(),
     // ONTs
     { name: `ONT: ${selectedOnt.model}`, quantity: totalOnts },
     // Fiber Cable
@@ -66,7 +81,7 @@ const BillOfMaterials: React.FC<BillOfMaterialsProps> = ({ parameters, selectedO
             {bomItems.map((item, index) => (
               <tr key={index} className="border-b border-gray-700">
                 <td className="px-4 py-2 font-medium">{item.name}</td>
-                <td className="px-4 py-2 text-right font-mono">{item.quantity}</td>
+                <td className="px-4 py-2 text-right font-mono">{String(item.quantity)}</td>
               </tr>
             ))}
           </tbody>

@@ -12,6 +12,7 @@ interface VisualizationPanelProps {
 }
 
 const SPLITTER_LOSS_MAP: { [key: string]: number } = {
+  '1:2': 3.5,
   '1:4': 7.5,
   '1:8': 10.5,
   '1:16': 13.8,
@@ -22,14 +23,24 @@ const SPLITTER_LOSS_MAP: { [key: string]: number } = {
 const FIBER_LOSS_PER_KM = 0.35; // at 1490nm for OS2
 
 const VisualizationPanel: React.FC<VisualizationPanelProps> = ({ parameters, selectedOlt }) => {
+  const { splitterConfig, expertMode } = parameters;
 
   const calculatePowerBudget = () => {
     const totalDistanceKm = (parameters.backboneDistance + parameters.dropCableLength) / 1000;
     const fiberLoss = totalDistanceKm * FIBER_LOSS_PER_KM;
-    const splitterLoss = SPLITTER_LOSS_MAP[parameters.splitRatio] || 0;
-    const connectorLossTotal = parameters.numberOfSplices * parameters.connectorLoss;
+
+    let splitterLoss = 0;
+    if (splitterConfig.type === 'Centralized') {
+        splitterLoss = SPLITTER_LOSS_MAP[splitterConfig.level1Ratio] || 0;
+    } else { // Cascaded
+        splitterLoss = (SPLITTER_LOSS_MAP[splitterConfig.level1Ratio] || 0) + (SPLITTER_LOSS_MAP[splitterConfig.level2Ratio] || 0);
+    }
     
-    const totalLoss = fiberLoss + splitterLoss + connectorLossTotal;
+    const connectorLossTotal = (parameters.backboneSplices + parameters.dropSplices) * parameters.connectorLoss;
+    const spliceLossTotal = (parameters.backboneSplices + parameters.dropSplices) * parameters.spliceLoss;
+    const safetyMargin = expertMode ? parameters.safetyMargin : 0;
+    
+    const totalLoss = fiberLoss + splitterLoss + connectorLossTotal + spliceLossTotal + safetyMargin;
     const receivedPower = parameters.oltTxPower - totalLoss;
     const powerMargin = receivedPower - parameters.ontRxSensitivity;
     
@@ -45,6 +56,14 @@ const VisualizationPanel: React.FC<VisualizationPanelProps> = ({ parameters, sel
   };
 
   const ontsToDisplay = Math.min(parameters.ontsPerPonPort, 8); // Display max 8 for visual clarity
+
+  const renderSplitter = (ratio: string, label: string) => (
+    <div className="flex flex-col items-center text-center">
+        <SplitterIcon className="w-12 h-12 text-yellow-400" />
+        <p className="text-sm font-semibold mt-2">{label}</p>
+        <p className="text-xs text-gray-400">{ratio}</p>
+    </div>
+  );
 
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg h-full flex flex-col">
@@ -92,12 +111,16 @@ const VisualizationPanel: React.FC<VisualizationPanelProps> = ({ parameters, sel
             <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-700 px-2 py-0.5 rounded text-xs whitespace-nowrap">{parameters.backboneDistance}m Backbone</span>
           </div>
 
-          {/* Splitter */}
-          <div className="flex flex-col items-center">
-            <SplitterIcon className="w-12 h-12 text-yellow-400" />
-            <p className="text-sm font-semibold mt-2">Splitter</p>
-            <p className="text-xs text-gray-400">{parameters.splitRatio}</p>
-          </div>
+          {/* Splitter(s) */}
+          {splitterConfig.type === 'Centralized' ? (
+              renderSplitter(splitterConfig.level1Ratio, 'Splitter')
+          ) : (
+              <>
+                {renderSplitter(splitterConfig.level1Ratio, 'Splitter L1')}
+                <div className="flex-1 h-0.5 bg-yellow-400 mx-2"></div>
+                {renderSplitter(splitterConfig.level2Ratio, 'Splitter L2')}
+              </>
+          )}
 
           {/* Splitter to ONT paths */}
           <div className="flex-1 flex flex-col justify-center items-end pl-2 relative">

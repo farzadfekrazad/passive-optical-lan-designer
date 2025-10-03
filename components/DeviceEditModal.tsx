@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import type { OltDevice, OntDevice, OltSfpOption, OltComponent, OntEthernetPort } from '../types';
+import type { OltDevice, OntDevice, OltSfpOption, OltComponent, OntEthernetPort, PonTechnology } from '../types';
 import DynamicListInput from './DynamicListInput';
 
 interface DeviceEditModalProps {
@@ -10,8 +10,8 @@ interface DeviceEditModalProps {
   onClose: () => void;
 }
 
-const emptyOlt: Omit<OltDevice, 'id'> = { model: '', description: '', ponPorts: 8, sfpOptions: [{name: 'GPON SFP C+', txPower: 5.0}], components: [] };
-const emptyOnt: Omit<OntDevice, 'id'> = { model: '', description: '', rxSensitivity: -28, ethernetPorts: [{type: '10/100/1000Base-T', count: 1}], fxsPorts: 0, wifi: null };
+const emptyOlt: Omit<OltDevice, 'id'> = { model: '', description: '', technology: 'GPON', ponPorts: 8, sfpOptions: [{name: 'GPON SFP C+', txPower: 5.0}], components: [] };
+const emptyOnt: Omit<OntDevice, 'id'> = { model: '', description: '', technology: 'GPON', rxSensitivity: -28, ethernetPorts: [{type: '10/100/1000Base-T', count: 1}], fxsPorts: 0, wifi: null };
 
 const DeviceEditModal: React.FC<DeviceEditModalProps> = ({ device, type, onSave, onClose }) => {
   const [formData, setFormData] = useState<Omit<OltDevice, 'id'> | Omit<OntDevice, 'id'>>(() => {
@@ -54,6 +54,11 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({ device, type, onSave,
 
   const title = device ? `Edit ${type.toUpperCase()}` : `Add New ${type.toUpperCase()}`;
   
+  const technologyOptions: {label: string, value: PonTechnology}[] = [
+      { label: 'GPON', value: 'GPON' },
+      { label: 'XGS-PON', value: 'XGS-PON' }
+  ];
+
   const renderOltFields = () => {
     const oltData = formData as Omit<OltDevice, 'id'>;
     return <>
@@ -140,6 +145,12 @@ const DeviceEditModal: React.FC<DeviceEditModalProps> = ({ device, type, onSave,
           <div>
             <label htmlFor="model" className="block text-sm font-medium text-gray-400 mb-1">Model</label>
             <input type="text" name="model" id="model" value={formData.model} onChange={handleChange} required className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+          </div>
+           <div>
+            <label htmlFor="technology" className="block text-sm font-medium text-gray-400 mb-1">Technology</label>
+            <select name="technology" id="technology" value={formData.technology} onChange={handleChange} required className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                {technologyOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+            </select>
           </div>
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-400 mb-1">Description</label>

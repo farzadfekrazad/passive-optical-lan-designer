@@ -5,6 +5,7 @@ import ParameterGroup from './ParameterGroup';
 import SelectInput from './SelectInput';
 import SliderInput from './SliderInput';
 import StaticDisplay from './StaticDisplay';
+import SplitterConfig from './SplitterConfig';
 
 interface ParameterPanelProps {
   parameters: PolDesignParameters;
@@ -16,10 +17,13 @@ interface ParameterPanelProps {
 }
 
 const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, oltDevices, ontDevices, selectedOlt, selectedOnt }) => {
-  const maxOnts = parseInt(parameters.splitRatio.split(':')[1]);
+  const { splitterConfig } = parameters;
+  const maxOnts = splitterConfig.type === 'Centralized' 
+    ? parseInt(splitterConfig.level1Ratio.split(':')[1]) 
+    : parseInt(splitterConfig.level1Ratio.split(':')[1]) * parseInt(splitterConfig.level2Ratio.split(':')[1]);
 
-  const oltOptions = oltDevices.map(olt => ({ label: `${olt.model}`, value: olt.id, description: olt.description }));
-  const ontOptions = ontDevices.map(ont => ({ label: `${ont.model}`, value: ont.id, description: ont.description }));
+  const oltOptions = oltDevices.map(olt => ({ label: `${olt.model} (${olt.technology})`, value: olt.id, description: olt.description }));
+  const ontOptions = ontDevices.map(ont => ({ label: `${ont.model} (${ont.technology})`, value: ont.id, description: ont.description }));
   
   const sfpOptions = selectedOlt?.sfpOptions.map(sfp => ({ label: `${sfp.name} (${sfp.txPower.toFixed(1)} dBm)`, value: sfp.name })) || [];
 
@@ -50,30 +54,66 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, o
       </ParameterGroup>
       
       <ParameterGroup title="Optical Distribution Network (ODN)" defaultOpen={true}>
+         <div className="flex items-center justify-between bg-gray-900/50 p-3 rounded-md">
+          <label htmlFor="expertMode" className="text-sm font-medium text-gray-300">Expert Mode</label>
+          <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+              <input 
+                  type="checkbox" 
+                  name="expertMode" 
+                  id="expertMode" 
+                  checked={parameters.expertMode}
+                  onChange={e => onChange('expertMode', e.target.checked)}
+                  className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+              />
+              <label htmlFor="expertMode" className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
+          </div>
+        </div>
         <SliderInput
           label="Backbone Distance (m)"
           value={parameters.backboneDistance}
           onChange={e => onChange('backboneDistance', parseInt(e.target.value))}
           min={50} max={20000} step={50}
         />
-        <SelectInput 
-          label="Split Ratio"
-          value={parameters.splitRatio}
-          onChange={e => onChange('splitRatio', e.target.value)}
-          options={['1:4', '1:8', '1:16', '1:32', '1:64'].map(o => ({label: o, value: o}))}
+        <SplitterConfig
+            config={parameters.splitterConfig}
+            onChange={newConfig => onChange('splitterConfig', newConfig)}
         />
-        <SliderInput
-          label="Connectors / Splices Count"
-          value={parameters.numberOfSplices}
-          onChange={e => onChange('numberOfSplices', parseInt(e.target.value))}
-          min={2} max={10} step={1}
-        />
-         <SliderInput
-          label="Connector Loss (dB)"
-          value={parameters.connectorLoss}
-          onChange={e => onChange('connectorLoss', parseFloat(e.target.value))}
-          min={0.1} max={1} step={0.05}
-        />
+
+        {parameters.expertMode && (
+          <div className="space-y-4 p-3 bg-gray-900/50 rounded-md">
+             <h4 className="text-sm font-semibold text-cyan-300 border-b border-gray-700 pb-1 mb-2">Expert Loss Configuration</h4>
+             <SliderInput
+              label="Safety Margin (dB)"
+              value={parameters.safetyMargin}
+              onChange={e => onChange('safetyMargin', parseFloat(e.target.value))}
+              min={0} max={5} step={0.1}
+            />
+            <SliderInput
+              label="Backbone Connectors/Splices"
+              value={parameters.backboneSplices}
+              onChange={e => onChange('backboneSplices', parseInt(e.target.value))}
+              min={0} max={10} step={1}
+            />
+             <SliderInput
+              label="Drop Connectors/Splices"
+              value={parameters.dropSplices}
+              onChange={e => onChange('dropSplices', parseInt(e.target.value))}
+              min={0} max={10} step={1}
+            />
+            <SliderInput
+              label="Connector Loss (dB)"
+              value={parameters.connectorLoss}
+              onChange={e => onChange('connectorLoss', parseFloat(e.target.value))}
+              min={0.1} max={1} step={0.05}
+            />
+            <SliderInput
+              label="Splice Loss (dB)"
+              value={parameters.spliceLoss}
+              onChange={e => onChange('spliceLoss', parseFloat(e.target.value))}
+              min={0.01} max={0.5} step={0.01}
+            />
+          </div>
+        )}
       </ParameterGroup>
 
       <ParameterGroup title="Work Area / User End" defaultOpen={true}>
@@ -85,6 +125,7 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, o
         />
         {selectedOnt && (
             <div className="bg-gray-900/50 p-3 rounded-md space-y-2 text-sm">
+                <StaticDisplay label="Technology" value={selectedOnt.technology} />
                 <StaticDisplay label="Rx Sensitivity" value={`${selectedOnt.rxSensitivity.toFixed(1)} dBm`} />
                 {selectedOnt.ethernetPorts.map(p => <StaticDisplay key={p.type} label={`ETH ${p.type}`} value={`${p.count} port(s)`} />)}
                 {selectedOnt.fxsPorts > 0 && <StaticDisplay label="FXS Ports" value={selectedOnt.fxsPorts} />}

@@ -50,6 +50,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ oltDevices, ontDevices, onUpdat
           <thead className="text-xs text-gray-300 uppercase bg-gray-700">
             <tr>
               <th scope="col" className="px-6 py-3">Model</th>
+              <th scope="col" className="px-6 py-3">Technology</th>
               <th scope="col" className="px-6 py-3">PON Ports</th>
               <th scope="col" className="px-6 py-3">SFP Options</th>
               <th scope="col" className="px-6 py-3">Description</th>
@@ -60,6 +61,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ oltDevices, ontDevices, onUpdat
             {oltDevices.map(device => (
               <tr key={device.id} className="bg-gray-800 border-b border-gray-700 hover:bg-gray-700/50">
                 <th scope="row" className="px-6 py-4 font-medium text-white whitespace-nowrap">{device.model}</th>
+                <td className="px-6 py-4">{device.technology}</td>
                 <td className="px-6 py-4">{device.ponPorts}</td>
                 <td className="px-6 py-4">{device.sfpOptions.map(s => `${s.name} (${s.txPower}dBm)`).join(', ')}</td>
                 <td className="px-6 py-4 truncate max-w-xs">{device.description}</td>
@@ -88,6 +90,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ oltDevices, ontDevices, onUpdat
           <thead className="text-xs text-gray-300 uppercase bg-gray-700">
             <tr>
               <th scope="col" className="px-6 py-3">Model</th>
+              <th scope="col" className="px-6 py-3">Technology</th>
               <th scope="col" className="px-6 py-3">Rx Sensitivity</th>
               <th scope="col" className="px-6 py-3">Ports</th>
               <th scope="col" className="px-6 py-3">Wi-Fi</th>
@@ -98,6 +101,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ oltDevices, ontDevices, onUpdat
             {ontDevices.map(device => (
               <tr key={device.id} className="bg-gray-800 border-b border-gray-700 hover:bg-gray-700/50">
                 <th scope="row" className="px-6 py-4 font-medium text-white whitespace-nowrap">{device.model}</th>
+                <td className="px-6 py-4">{device.technology}</td>
                 <td className="px-6 py-4">{device.rxSensitivity.toFixed(1)} dBm</td>
                 <td className="px-6 py-4">
                     {device.ethernetPorts.map(p => `${p.count}x ${p.type}`).join(', ')}
