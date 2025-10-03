@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { authService } from '../auth/authService';
 import type { User } from '../types';
@@ -60,57 +59,57 @@ const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
       case 'register':
         return (
           <form onSubmit={handleRegister} className="space-y-4">
-            <h2 className="text-2xl font-bold text-center text-cyan-400">Register New Account</h2>
+            <h2 className="text-2xl font-bold text-center text-cyan-400">ثبت نام حساب کاربری جدید</h2>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">ایمیل</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">رمز عبور</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white" />
             </div>
-            <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded">Register</button>
+            <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded">ثبت نام</button>
             <p className="text-center text-sm text-gray-400">
-              Already have an account? <button type="button" onClick={() => setMode('login')} className="font-semibold text-cyan-400 hover:underline">Login</button>
+              قبلا ثبت نام کرده‌اید؟ <button type="button" onClick={() => setMode('login')} className="font-semibold text-cyan-400 hover:underline">وارد شوید</button>
             </p>
           </form>
         );
       case 'verify':
         return (
            <form onSubmit={handleVerify} className="space-y-4">
-            <h2 className="text-2xl font-bold text-center text-cyan-400">Verify Your Account</h2>
-            <p className="text-center text-sm text-gray-400">A verification code was sent to your console. Please enter it below.</p>
+            <h2 className="text-2xl font-bold text-center text-cyan-400">تایید حساب کاربری</h2>
+            <p className="text-center text-sm text-gray-400">یک کد تایید به کنسول شما ارسال شد. لطفا آن را در زیر وارد کنید.</p>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">ایمیل</label>
               <input type="email" value={email} readOnly className="w-full bg-gray-800 border border-gray-600 rounded-md py-2 px-3 text-gray-300" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Verification Code</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">کد تایید</label>
               <input type="text" value={verifyCode} onChange={e => setVerifyCode(e.target.value)} required className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white" />
             </div>
-            <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded">Verify</button>
+            <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded">تایید</button>
           </form>
         );
       case 'login':
       default:
         return (
           <form onSubmit={handleLogin} className="space-y-4">
-            <h2 className="text-2xl font-bold text-center text-cyan-400">Login</h2>
+            <h2 className="text-2xl font-bold text-center text-cyan-400">ورود</h2>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">ایمیل</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">رمز عبور</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white" />
             </div>
-            <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded">Login</button>
+            <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded">ورود</button>
             <p className="text-center text-sm text-gray-400">
-              No account? <button type="button" onClick={() => setMode('register')} className="font-semibold text-cyan-400 hover:underline">Register</button>
+              حساب کاربری ندارید؟ <button type="button" onClick={() => setMode('register')} className="font-semibold text-cyan-400 hover:underline">ثبت نام کنید</button>
             </p>
              <div className="text-xs text-center text-gray-500 pt-4">
-                <p>Default admin: <span className="font-mono">admin@pol.designer</span></p>
-                <p>Password: <span className="font-mono">admin123</span></p>
+                <p>ادمین پیش‌فرض: <span className="font-mono">admin@pol.designer</span></p>
+                <p>رمز عبور: <span className="font-mono">admin123</span></p>
             </div>
           </form>
         );
@@ -120,7 +119,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col justify-center items-center p-4">
         <div className="mb-6 text-center">
-            <h1 className="text-4xl font-bold text-cyan-400">Passive Optical LAN (POL) Designer</h1>
+            <h1 className="text-4xl font-bold text-cyan-400">طراح شبکه نوری پسیو (POL)</h1>
         </div>
         <div className="w-full max-w-md bg-gray-800 p-8 rounded-lg shadow-2xl">
             {error && <p className="bg-red-900/50 text-red-300 p-3 rounded-md mb-4 text-sm">{error}</p>}

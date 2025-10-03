@@ -8,16 +8,20 @@ interface DynamicListInputProps<T> {
   renderItem: (item: T, onChange: (field: keyof T, value: any) => void) => React.ReactNode;
 }
 
-// FIX: Replaced unsafe String.prototype.singularize with a type-safe helper function to fix TypeScript error.
-// A simple function to singularize a label for the 'Add' button.
-// It handles "SFP Options" -> "SFP Option" and also attempts to handle more complex
-// cases like "Chassis Components (Optional)" -> "Chassis Component".
 const getSingularLabel = (label: string): string => {
-    if (label.includes("Components")) {
-        return label.replace("Components", "Component").split('(')[0].trim();
+    if (label.includes("گزینه‌های")) {
+        return "گزینه";
     }
+    if (label.includes("پورت‌های")) {
+        return "پورت";
+    }
+    if (label.includes("قطعات")) {
+        return "قطعه";
+    }
+    // Fallback for simple plural 's', though not used in Persian labels
     return label.replace(/s$/, "");
 }
+
 
 function DynamicListInput<T>({ label, items, onChange, newItem, renderItem }: DynamicListInputProps<T>) {
   const handleAddItem = () => {
@@ -59,7 +63,7 @@ function DynamicListInput<T>({ label, items, onChange, newItem, renderItem }: Dy
         onClick={handleAddItem}
         className="text-sm text-cyan-400 hover:text-cyan-300 font-semibold"
       >
-        + Add {getSingularLabel(label)}
+        + افزودن {getSingularLabel(label)}
       </button>
     </div>
   );

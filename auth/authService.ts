@@ -1,4 +1,3 @@
-
 import type { User, UserRole } from '../types';
 import useLocalStorage from '../hooks/useLocalStorage';
 
@@ -47,7 +46,7 @@ class AuthService {
   
   register(email: string, password: string): { success: boolean, message: string } {
     if (this.users.find(u => u.email === email)) {
-      return { success: false, message: 'User with this email already exists.' };
+      return { success: false, message: 'کاربری با این ایمیل قبلا ثبت نام کرده است.' };
     }
     
     const newUser: User = {
@@ -65,18 +64,18 @@ class AuthService {
     localStorage.setItem(`${VERIFICATION_CODE_KEY}_${email}`, code);
     console.log(`Verification code for ${email}: ${code}`); // Log to console for simulation
     
-    return { success: true, message: 'Registration successful. Please check your console for the verification code.' };
+    return { success: true, message: 'ثبت نام موفقیت آمیز بود. لطفا کنسول خود را برای کد تایید بررسی کنید.' };
   }
   
   verify(email: string, code: string): { success: boolean, message: string } {
     const storedCode = localStorage.getItem(`${VERIFICATION_CODE_KEY}_${email}`);
     if (!storedCode || storedCode !== code) {
-      return { success: false, message: 'Invalid verification code.' };
+      return { success: false, message: 'کد تایید نامعتبر است.' };
     }
 
     const userIndex = this.users.findIndex(u => u.email === email);
     if (userIndex === -1) {
-       return { success: false, message: 'User not found.' };
+       return { success: false, message: 'کاربر یافت نشد.' };
     }
 
     const updatedUsers = [...this.users];
@@ -85,28 +84,28 @@ class AuthService {
 
     localStorage.removeItem(`${VERIFICATION_CODE_KEY}_${email}`);
     
-    return { success: true, message: 'Account verified successfully. You can now log in.' };
+    return { success: true, message: 'حساب کاربری با موفقیت تایید شد. اکنون می‌توانید وارد شوید.' };
   }
 
   login(email: string, password: string): { success: boolean, message: string, user: User | null } {
     const user = this.users.find(u => u.email === email);
     
     if (!user) {
-      return { success: false, message: 'Invalid email or password.', user: null };
+      return { success: false, message: 'ایمیل یا رمز عبور نامعتبر است.', user: null };
     }
     
     if (!user.verified) {
-        return { success: false, message: 'Account not verified. Please check your email for the verification code.', user: null };
+        return { success: false, message: 'حساب کاربری تایید نشده است. لطفا کنسول خود را برای کد تایید بررسی کنید.', user: null };
     }
     
     if (user.passwordHash !== pseudoHash(password)) {
-      return { success: false, message: 'Invalid email or password.', user: null };
+      return { success: false, message: 'ایمیل یا رمز عبور نامعتبر است.', user: null };
     }
     
     this.currentUser = user;
     localStorage.setItem(SESSION_KEY, JSON.stringify(user));
     
-    return { success: true, message: 'Login successful.', user };
+    return { success: true, message: 'ورود موفقیت آمیز بود.', user };
   }
   
   logout(): void {
@@ -125,7 +124,7 @@ class AuthService {
 
   addUser(email: string, password: string, role: UserRole): { success: boolean, message: string } {
     if (this.users.find(u => u.email === email)) {
-        return { success: false, message: 'User with this email already exists.' };
+        return { success: false, message: 'کاربری با این ایمیل قبلا ثبت نام کرده است.' };
     }
      const newUser: User = {
       id: crypto.randomUUID(),
@@ -135,27 +134,27 @@ class AuthService {
       verified: true, // Admins create verified users
     };
     this.setUsers([...this.users, newUser]);
-    return { success: true, message: 'User added successfully.' };
+    return { success: true, message: 'کاربر با موفقیت اضافه شد.' };
   }
 
   updateUser(updatedUser: User): { success: boolean, message: string } {
       const userIndex = this.users.findIndex(u => u.id === updatedUser.id);
       if (userIndex === -1) {
-          return { success: false, message: 'User not found.' };
+          return { success: false, message: 'کاربر یافت نشد.' };
       }
       const updatedUsers = [...this.users];
       updatedUsers[userIndex] = updatedUser;
       this.setUsers(updatedUsers);
-      return { success: true, message: 'User updated.' };
+      return { success: true, message: 'کاربر به‌روزرسانی شد.' };
   }
   
   deleteUser(userId: string): { success: boolean, message: string } {
       const updatedUsers = this.users.filter(u => u.id !== userId);
       if (updatedUsers.length === this.users.length) {
-           return { success: false, message: 'User not found.' };
+           return { success: false, message: 'کاربر یافت نشد.' };
       }
       this.setUsers(updatedUsers);
-      return { success: true, message: 'User deleted.' };
+      return { success: true, message: 'کاربر حذف شد.' };
   }
 }
 

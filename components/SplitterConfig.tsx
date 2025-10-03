@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { SplitterConfig, SplitRatio } from '../types';
 
@@ -28,21 +27,21 @@ const SplitterConfig: React.FC<SplitterConfigProps> = ({ config, onChange }) => 
     return (
         <div className="space-y-3 p-3 bg-gray-900/50 rounded-md">
             <div className="flex items-center justify-between">
-                <label className="block text-sm font-medium text-gray-400 mb-1">Splitter Architecture</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1">معماری اسپلیتر</label>
                 <div className="flex rounded-md bg-gray-700 p-1 text-sm">
                     <button 
                         type="button"
                         onClick={() => handleTypeChange('Centralized')}
                         className={`px-3 py-1 rounded-md ${config.type === 'Centralized' ? 'bg-cyan-600 text-white' : 'text-gray-300'}`}
                     >
-                        Centralized
+                        متمرکز
                     </button>
                     <button 
                         type="button"
                         onClick={() => handleTypeChange('Cascaded')}
                         className={`px-3 py-1 rounded-md ${config.type === 'Cascaded' ? 'bg-cyan-600 text-white' : 'text-gray-300'}`}
                     >
-                        Cascaded
+                        آبشاری
                     </button>
                 </div>
             </div>
@@ -58,7 +57,7 @@ const SplitterConfig: React.FC<SplitterConfigProps> = ({ config, onChange }) => 
             ) : (
                 <div className="grid grid-cols-2 gap-2">
                     <div>
-                        <label className="text-xs text-gray-400">Level 1 Split</label>
+                        <label className="text-xs text-gray-400">اسپلیت سطح ۱</label>
                          <select
                             value={config.level1Ratio}
                             onChange={e => handleRatioChange('level1Ratio', e.target.value as SplitRatio)}
@@ -68,7 +67,7 @@ const SplitterConfig: React.FC<SplitterConfigProps> = ({ config, onChange }) => 
                         </select>
                     </div>
                     <div>
-                        <label className="text-xs text-gray-400">Level 2 Split</label>
+                        <label className="text-xs text-gray-400">اسپلیت سطح ۲</label>
                          <select
                             value={config.level2Ratio}
                             onChange={e => handleRatioChange('level2Ratio', e.target.value as SplitRatio)}
@@ -79,8 +78,8 @@ const SplitterConfig: React.FC<SplitterConfigProps> = ({ config, onChange }) => 
                     </div>
                 </div>
             )}
-            <div className={`text-right text-sm font-semibold ${isValid ? 'text-gray-400' : 'text-red-500'}`}>
-                Total Split Ratio: 1:{totalRatio} { !isValid && "(Invalid)"}
+            <div className={`text-left text-sm font-semibold ${isValid ? 'text-gray-400' : 'text-red-500'}`}>
+                نسبت اسپلیت کل: 1:{totalRatio} { !isValid && "(نامعتبر)"}
             </div>
         </div>
     );

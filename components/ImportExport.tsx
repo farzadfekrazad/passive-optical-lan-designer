@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import type { OltDevice, OntDevice } from '../types';
 
@@ -62,13 +61,13 @@ const ImportExport: React.FC<ImportExportProps> = ({ oltDevices, ontDevices, onI
 
     return (
         <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
-            <h3 className="text-lg font-bold text-cyan-400 mb-2">Catalog Management</h3>
+            <h3 className="text-lg font-bold text-cyan-400 mb-2">مدیریت کاتالوگ</h3>
             <div className="flex space-x-4">
                 <button
                     onClick={handleExport}
                     className="bg-gray-700 hover:bg-gray-600 text-cyan-300 font-semibold py-2 px-4 rounded-md transition-colors"
                 >
-                    Export Catalog
+                    خروجی گرفتن از کاتالوگ
                 </button>
                  <input
                     type="file"
@@ -82,7 +81,7 @@ const ImportExport: React.FC<ImportExportProps> = ({ oltDevices, ontDevices, onI
                     disabled={disabled}
                     className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-4 rounded-md transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
                 >
-                    Import Catalog
+                    وارد کردن کاتالوگ
                 </button>
             </div>
         </div>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { PolDesignParameters, OltDevice, OntDevice } from '../types';
 import ParameterGroup from './ParameterGroup';
@@ -29,30 +28,30 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, o
 
   return (
     <div className="bg-gray-800 p-4 rounded-lg shadow-lg space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto">
-      <ParameterGroup title="Central Office / MDF" defaultOpen={true}>
+      <ParameterGroup title="مرکز تلفن / MDF" defaultOpen={true}>
         <SelectInput 
-          label="OLT Model"
+          label="مدل OLT"
           value={parameters.oltId}
           onChange={e => onChange('oltId', e.target.value)}
           options={oltOptions}
         />
         {selectedOlt && sfpOptions.length > 0 && (
           <SelectInput
-            label="SFP Module"
+            label="ماژول SFP"
             value={parameters.sfpSelection}
             onChange={e => onChange('sfpSelection', e.target.value)}
             options={sfpOptions}
           />
         )}
         <div className="bg-gray-900/50 p-3 rounded-md space-y-2 text-sm">
-            <StaticDisplay label="PON Ports" value={parameters.ponPorts} />
-            {selectedOlt?.uplinkPorts.map(p => <StaticDisplay key={p.type} label={`Uplink ${p.type}`} value={`${p.count} port(s)`} />)}
+            <StaticDisplay label="پورت‌های PON" value={parameters.ponPorts} />
+            {selectedOlt?.uplinkPorts.map(p => <StaticDisplay key={p.type} label={`آپ‌لینک ${p.type}`} value={`${p.count} پورت`} />)}
         </div>
       </ParameterGroup>
       
-      <ParameterGroup title="Optical Distribution Network (ODN)" defaultOpen={true}>
+      <ParameterGroup title="شبکه توزیع نوری (ODN)" defaultOpen={true}>
          <div className="flex items-center justify-between bg-gray-900/50 p-3 rounded-md">
-          <label htmlFor="expertMode" className="text-sm font-medium text-gray-300">Expert Mode</label>
+          <label htmlFor="expertMode" className="text-sm font-medium text-gray-300">حالت پیشرفته</label>
           <div className="relative inline-block w-10 h-6 align-middle select-none">
               <input 
                   type="checkbox" 
@@ -66,7 +65,7 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, o
           </div>
         </div>
         <SliderInput
-          label="Backbone Distance (m)"
+          label="فاصله کابل Backbone (متر)"
           value={parameters.backboneDistance}
           onChange={e => onChange('backboneDistance', parseInt(e.target.value))}
           min={50} max={20000} step={50}
@@ -78,33 +77,33 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, o
 
         {parameters.expertMode && (
           <div className="space-y-4 p-3 bg-gray-900/50 rounded-md">
-             <h4 className="text-sm font-semibold text-cyan-300 border-b border-gray-700 pb-1 mb-2">Expert Loss Configuration</h4>
+             <h4 className="text-sm font-semibold text-cyan-300 border-b border-gray-700 pb-1 mb-2">پیکربندی تلفات پیشرفته</h4>
              <SliderInput
-              label="Safety Margin (dB)"
+              label="حاشیه اطمینان (dB)"
               value={parameters.safetyMargin}
               onChange={e => onChange('safetyMargin', parseFloat(e.target.value))}
               min={0} max={5} step={0.1}
             />
             <SliderInput
-              label="Backbone Connectors/Splices"
+              label="اتصالات/فیوژن‌های Backbone"
               value={parameters.backboneSplices}
               onChange={e => onChange('backboneSplices', parseInt(e.target.value))}
               min={0} max={10} step={1}
             />
              <SliderInput
-              label="Drop Connectors/Splices"
+              label="اتصالات/فیوژن‌های Drop"
               value={parameters.dropSplices}
               onChange={e => onChange('dropSplices', parseInt(e.target.value))}
               min={0} max={10} step={1}
             />
             <SliderInput
-              label="Connector Loss (dB)"
+              label="تلفات کانکتور (dB)"
               value={parameters.connectorLoss}
               onChange={e => onChange('connectorLoss', parseFloat(e.target.value))}
               min={0.1} max={1} step={0.05}
             />
             <SliderInput
-              label="Splice Loss (dB)"
+              label="تلفات فیوژن (dB)"
               value={parameters.spliceLoss}
               onChange={e => onChange('spliceLoss', parseFloat(e.target.value))}
               min={0.01} max={0.5} step={0.01}
@@ -113,32 +112,32 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, o
         )}
       </ParameterGroup>
 
-      <ParameterGroup title="Work Area / User End" defaultOpen={true}>
+      <ParameterGroup title="سمت کاربر / مشترک" defaultOpen={true}>
         <SelectInput 
-          label="ONT Model"
+          label="مدل ONT"
           value={parameters.ontId}
           onChange={e => onChange('ontId', e.target.value)}
           options={ontOptions}
           disabled={ontOptions.length === 0}
         />
-        {ontOptions.length === 0 && <p className="text-xs text-yellow-400 p-2 bg-yellow-900/50 rounded-md">No compatible ONTs found for the selected OLT's technology.</p>}
+        {ontOptions.length === 0 && <p className="text-xs text-yellow-400 p-2 bg-yellow-900/50 rounded-md">هیچ ONT سازگاری برای تکنولوژی OLT انتخاب شده یافت نشد.</p>}
         {selectedOnt && (
             <div className="bg-gray-900/50 p-3 rounded-md space-y-2 text-sm">
-                <StaticDisplay label="Technology" value={selectedOnt.technology} />
-                <StaticDisplay label="Rx Sensitivity" value={`${selectedOnt.rxSensitivity.toFixed(1)} dBm`} />
-                {selectedOnt.ethernetPorts.map(p => <StaticDisplay key={p.type} label={`ETH ${p.type}`} value={`${p.count} port(s)`} />)}
-                {selectedOnt.fxsPorts > 0 && <StaticDisplay label="FXS Ports" value={selectedOnt.fxsPorts} />}
-                {selectedOnt.wifi && <StaticDisplay label="Wi-Fi" value={`${selectedOnt.wifi.standard} (${selectedOnt.wifi.bands})`} />}
+                <StaticDisplay label="تکنولوژی" value={selectedOnt.technology} />
+                <StaticDisplay label="حساسیت گیرنده" value={`${selectedOnt.rxSensitivity.toFixed(1)} dBm`} />
+                {selectedOnt.ethernetPorts.map(p => <StaticDisplay key={p.type} label={`اترنت ${p.type}`} value={`${p.count} پورت`} />)}
+                {selectedOnt.fxsPorts > 0 && <StaticDisplay label="پورت‌های FXS" value={selectedOnt.fxsPorts} />}
+                {selectedOnt.wifi && <StaticDisplay label="وای‌فای" value={`${selectedOnt.wifi.standard} (${selectedOnt.wifi.bands})`} />}
             </div>
         )}
         <SliderInput
-          label="ONTs per PON Port"
+          label="تعداد ONT برای هر پورت PON"
           value={parameters.ontsPerPonPort}
           onChange={e => onChange('ontsPerPonPort', parseInt(e.target.value))}
           min={1} max={maxOnts} step={1}
         />
          <SliderInput
-          label="Drop Cable Length (m)"
+          label="طول کابل Drop (متر)"
           value={parameters.dropCableLength}
           onChange={e => onChange('dropCableLength', parseInt(e.target.value))}
           min={5} max={100} step={5}
