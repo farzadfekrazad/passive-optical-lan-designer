@@ -1,0 +1,5 @@
+{
+  "name": "Passive Optical LAN (POL) Designer",
+  "description": "A comprehensive tool to design and visualize Passive Optical LAN networks. Configure every possible parameter from the OLT to the ONT and see a dynamic network diagram with a real-time power budget analysis.",
+  "requestFramePermissions": []
+}
