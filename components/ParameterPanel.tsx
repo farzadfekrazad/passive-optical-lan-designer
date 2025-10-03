@@ -11,13 +11,17 @@ interface ParameterPanelProps {
   onChange: (key: keyof PolDesignParameters, value: any) => void;
   oltDevices: OltDevice[];
   ontDevices: OntDevice[];
+  selectedOlt?: OltDevice;
+  selectedOnt?: OntDevice;
 }
 
-const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, oltDevices, ontDevices }) => {
+const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, oltDevices, ontDevices, selectedOlt, selectedOnt }) => {
   const maxOnts = parseInt(parameters.splitRatio.split(':')[1]);
 
   const oltOptions = oltDevices.map(olt => ({ label: `${olt.model}`, value: olt.id, description: olt.description }));
   const ontOptions = ontDevices.map(ont => ({ label: `${ont.model}`, value: ont.id, description: ont.description }));
+  
+  const sfpOptions = selectedOlt?.sfpOptions.map(sfp => ({ label: `${sfp.name} (${sfp.txPower.toFixed(1)} dBm)`, value: sfp.name })) || [];
 
   return (
     <div className="bg-gray-800 p-4 rounded-lg shadow-lg space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto">
@@ -28,30 +32,24 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, o
           onChange={e => onChange('oltId', e.target.value)}
           options={oltOptions}
         />
+        {selectedOlt && sfpOptions.length > 0 && (
+          <SelectInput
+            label="SFP Module"
+            value={parameters.sfpSelection}
+            onChange={e => onChange('sfpSelection', e.target.value)}
+            options={sfpOptions}
+          />
+        )}
         <StaticDisplay label="PON Ports" value={parameters.ponPorts} />
-        <StaticDisplay label="OLT Transmit Power (dBm)" value={`${parameters.oltTxPower.toFixed(1)}`} />
-        
         <SelectInput 
           label="Uplink Speed"
           value={parameters.uplinkSpeed}
           onChange={e => onChange('uplinkSpeed', e.target.value)}
           options={['10G', '40G', '100G'].map(o => ({label: o, value: o}))}
         />
-        <SelectInput 
-          label="Redundancy"
-          value={parameters.redundancyType}
-          onChange={e => onChange('redundancyType', e.target.value)}
-          options={['None', 'Type A', 'Type B'].map(o => ({label: o, value: o}))}
-        />
       </ParameterGroup>
       
       <ParameterGroup title="Optical Distribution Network (ODN)" defaultOpen={true}>
-        <SelectInput 
-          label="Backbone Cable Type"
-          value={parameters.cableType}
-          onChange={e => onChange('cableType', e.target.value)}
-          options={['Riser', 'Plenum', 'Armored'].map(o => ({label: o, value: o}))}
-        />
         <SliderInput
           label="Backbone Distance (m)"
           value={parameters.backboneDistance}
@@ -63,12 +61,6 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, o
           value={parameters.splitRatio}
           onChange={e => onChange('splitRatio', e.target.value)}
           options={['1:4', '1:8', '1:16', '1:32', '1:64'].map(o => ({label: o, value: o}))}
-        />
-        <SelectInput 
-          label="Splitter Levels"
-          value={parameters.splitterLevels}
-          onChange={e => onChange('splitterLevels', e.target.value)}
-          options={['1 (Centralized)', '2 (Cascaded)'].map(o => ({label: o, value: o}))}
         />
         <SliderInput
           label="Connectors / Splices Count"
@@ -91,7 +83,14 @@ const ParameterPanel: React.FC<ParameterPanelProps> = ({ parameters, onChange, o
           onChange={e => onChange('ontId', e.target.value)}
           options={ontOptions}
         />
-        <StaticDisplay label="ONT Receiver Sensitivity (dBm)" value={`${parameters.ontRxSensitivity.toFixed(1)}`} />
+        {selectedOnt && (
+            <div className="bg-gray-900/50 p-3 rounded-md space-y-2 text-sm">
+                <StaticDisplay label="Rx Sensitivity" value={`${selectedOnt.rxSensitivity.toFixed(1)} dBm`} />
+                {selectedOnt.ethernetPorts.map(p => <StaticDisplay key={p.type} label={`ETH ${p.type}`} value={`${p.count} port(s)`} />)}
+                {selectedOnt.fxsPorts > 0 && <StaticDisplay label="FXS Ports" value={selectedOnt.fxsPorts} />}
+                {selectedOnt.wifi && <StaticDisplay label="Wi-Fi" value={`${selectedOnt.wifi.standard} (${selectedOnt.wifi.bands})`} />}
+            </div>
+        )}
         <SliderInput
           label="ONTs per PON Port"
           value={parameters.ontsPerPonPort}

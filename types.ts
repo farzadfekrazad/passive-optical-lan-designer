@@ -1,12 +1,26 @@
 
-import { initialOltDevices, initialOntDevices } from './data/eltexDevices';
+export interface OltSfpOption {
+  name: string;
+  txPower: number; // in dBm
+}
+
+export interface OltComponent {
+  name: string;
+  quantity: number;
+}
 
 export interface OltDevice {
   id: string;
   model: string;
   description: string;
   ponPorts: number;
-  txPower: number; // in dBm
+  sfpOptions: OltSfpOption[];
+  components: OltComponent[]; // For chassis-based OLTs
+}
+
+export interface OntEthernetPort {
+  type: string; // e.g., '10/100/1000Base-T', '10GBase-T'
+  count: number;
 }
 
 export interface OntDevice {
@@ -14,15 +28,22 @@ export interface OntDevice {
   model: string;
   description: string;
   rxSensitivity: number; // in dBm
+  ethernetPorts: OntEthernetPort[];
+  fxsPorts: number;
+  wifi: {
+    standard: string; // e.g., '802.11ac', '802.11ax'
+    bands: string; // e.g., '2.4GHz', '2.4/5GHz'
+  } | null;
 }
 
 export interface PolDesignParameters {
   // Central Office / MDF
-  oltId: string; 
+  oltId: string;
+  sfpSelection: string; // Name of the selected SFP
   ponPorts: number;
   uplinkSpeed: '10G' | '40G' | '100G';
   redundancyType: 'None' | 'Type A' | 'Type B';
-  oltTxPower: number; // in dBm
+  oltTxPower: number; // in dBm, derived from sfpSelection
 
   // Optical Distribution Network (ODN)
   fiberType: 'Singlemode OS2';
@@ -36,22 +57,22 @@ export interface PolDesignParameters {
   numberOfSplices: number;
 
   // Work Area / User End
-  ontId: string; 
+  ontId: string;
   ontsPerPonPort: number;
   ontRxSensitivity: number; // in dBm
   ontPowering: 'Local AC' | 'Remote PoE';
   dropCableLength: number; // in meters
 }
 
-const defaultOlt = initialOltDevices[2]; // Default to LTP-8X
-const defaultOnt = initialOntDevices[0]; // Default to NTU-1 rev.C
+// These are just fallback IDs for the initial state.
+// The useLocalStorage hook will ensure valid IDs from the persisted list are used.
+const DEFAULT_OLT_ID = 'b7a3a9e0-9a2c-4e8b-8c1d-1f3e5a7b9d1c'; // LTP-8X
+const DEFAULT_ONT_ID = 'c1e4f7a8-3b9d-4e6f-8a2c-1d5e7b9a3c1f'; // NTU-RG-5421G-Wac
 
-export const initialParameters: PolDesignParameters = {
-  oltId: defaultOlt.id,
-  ponPorts: defaultOlt.ponPorts,
+export const initialParameters: Omit<PolDesignParameters, 'oltTxPower' | 'ponPorts' | 'ontRxSensitivity' | 'sfpSelection'> & { oltId: string; ontId: string } = {
+  oltId: DEFAULT_OLT_ID,
   uplinkSpeed: '10G',
   redundancyType: 'Type B',
-  oltTxPower: defaultOlt.txPower,
 
   fiberType: 'Singlemode OS2',
   cableType: 'Plenum',
@@ -63,9 +84,8 @@ export const initialParameters: PolDesignParameters = {
   spliceLoss: 0.1,
   numberOfSplices: 2,
 
-  ontId: defaultOnt.id,
+  ontId: DEFAULT_ONT_ID,
   ontsPerPonPort: 32,
-  ontRxSensitivity: defaultOnt.rxSensitivity,
   ontPowering: 'Remote PoE',
   dropCableLength: 50,
 };

@@ -23,7 +23,7 @@ const SelectInput: React.FC<SelectInputProps> = ({ label, value, onChange, optio
           <option key={String(option.value)} value={option.value} title={option.description}>{option.label}</option>
         ))}
       </select>
-       {selectedOption?.description && <p className="text-xs text-gray-500 mt-1 truncate">{selectedOption.description}</p>}
+       {selectedOption?.description && <p className="text-xs text-gray-500 mt-1 truncate" title={selectedOption.description}>{selectedOption.description}</p>}
     </div>
   );
 };

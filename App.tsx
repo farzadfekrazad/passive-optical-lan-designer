@@ -1,19 +1,36 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { PolDesignParameters, initialParameters, OltDevice, OntDevice } from './types';
 import { initialOltDevices, initialOntDevices } from './data/eltexDevices';
 import Header from './components/Header';
 import ParameterPanel from './components/ParameterPanel';
 import VisualizationPanel from './components/VisualizationPanel';
 import AdminPanel from './components/AdminPanel';
+import BillOfMaterials from './components/BillOfMaterials';
 import useLocalStorage from './hooks/useLocalStorage';
 
 const App: React.FC = () => {
-  const [parameters, setParameters] = useState<PolDesignParameters>(initialParameters);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
 
   const [oltDevices, setOltDevices] = useLocalStorage<OltDevice[]>('oltDevices', initialOltDevices);
   const [ontDevices, setOntDevices] = useLocalStorage<OntDevice[]>('ontDevices', initialOntDevices);
+
+  const [parameters, setParameters] = useState<PolDesignParameters>(() => {
+    // Ensure initial parameters are valid against stored devices
+    const defaultOlt = oltDevices.find(o => o.id === initialParameters.oltId) || oltDevices[0];
+    const defaultOnt = ontDevices.find(o => o.id === initialParameters.ontId) || ontDevices[0];
+    const defaultSfp = defaultOlt?.sfpOptions[0]?.name || '';
+    
+    return {
+      ...initialParameters,
+      oltId: defaultOlt.id,
+      ontId: defaultOnt.id,
+      sfpSelection: defaultSfp,
+      oltTxPower: defaultOlt?.sfpOptions[0]?.txPower || 0,
+      ponPorts: defaultOlt?.ponPorts || 0,
+      ontRxSensitivity: defaultOnt?.rxSensitivity || 0,
+    };
+  });
 
   const handleParameterChange = useCallback((key: keyof PolDesignParameters, value: any) => {
     setParameters(prevParams => {
@@ -22,9 +39,19 @@ const App: React.FC = () => {
         if (key === 'oltId') {
             const selectedOlt = oltDevices.find(olt => olt.id === value);
             if (selectedOlt) {
+                const firstSfp = selectedOlt.sfpOptions[0];
                 newParams.ponPorts = selectedOlt.ponPorts;
-                newParams.oltTxPower = selectedOlt.txPower;
+                newParams.sfpSelection = firstSfp?.name || '';
+                newParams.oltTxPower = firstSfp?.txPower || 0;
             }
+        }
+        
+        if (key === 'sfpSelection') {
+             const selectedOlt = oltDevices.find(olt => olt.id === newParams.oltId);
+             const selectedSfp = selectedOlt?.sfpOptions.find(sfp => sfp.name === value);
+             if (selectedSfp) {
+                newParams.oltTxPower = selectedSfp.txPower;
+             }
         }
 
         if (key === 'ontId') {
@@ -65,24 +92,25 @@ const App: React.FC = () => {
     if (type === 'olt') {
       setOltDevices(prev => prev.filter(d => d.id !== deviceId));
       if (parameters.oltId === deviceId) {
-        // Reset to a valid device if the deleted one was selected
-        const newOlt = oltDevices.find(d => d.id !== deviceId);
-        if(newOlt) handleParameterChange('oltId', newOlt.id);
+        const fallbackOlt = oltDevices.find(d => d.id !== deviceId) || null;
+        handleParameterChange('oltId', fallbackOlt?.id || '');
       }
     } else {
       setOntDevices(prev => prev.filter(d => d.id !== deviceId));
       if (parameters.ontId === deviceId) {
-         const newOnt = ontDevices.find(d => d.id !== deviceId);
-         if(newOnt) handleParameterChange('ontId', newOnt.id);
+         const fallbackOnt = ontDevices.find(d => d.id !== deviceId) || null;
+         handleParameterChange('ontId', fallbackOnt?.id || '');
       }
     }
   };
 
+  const selectedOlt = useMemo(() => oltDevices.find(o => o.id === parameters.oltId), [oltDevices, parameters.oltId]);
+  const selectedOnt = useMemo(() => ontDevices.find(o => o.id === parameters.ontId), [ontDevices, parameters.ontId]);
 
   return (
-    <div className="min-h-screen bg-gray-900 font-sans">
+    <div className="min-h-screen bg-gray-900 font-sans flex flex-col">
       <Header onAdminClick={() => setIsAdminPanelOpen(!isAdminPanelOpen)} isAdminOpen={isAdminPanelOpen} />
-      <main className="p-4 max-w-[1920px] mx-auto">
+      <main className="flex-grow p-4 max-w-[1920px] mx-auto w-full">
         {isAdminPanelOpen ? (
           <AdminPanel 
             oltDevices={oltDevices}
@@ -92,17 +120,26 @@ const App: React.FC = () => {
             onDelete={handleDeviceDelete}
           />
         ) : (
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="lg:w-1/3 xl:w-1/4">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 h-full">
+            <div className="xl:col-span-3">
               <ParameterPanel 
                 parameters={parameters} 
                 onChange={handleParameterChange}
                 oltDevices={oltDevices}
                 ontDevices={ontDevices}
+                selectedOlt={selectedOlt}
+                selectedOnt={selectedOnt}
               />
             </div>
-            <div className="flex-1 lg:w-2/3 xl:w-3/4">
-              <VisualizationPanel parameters={parameters} oltDevices={oltDevices} />
+            <div className="xl:col-span-6">
+              <VisualizationPanel parameters={parameters} selectedOlt={selectedOlt} />
+            </div>
+            <div className="xl:col-span-3">
+               <BillOfMaterials 
+                  parameters={parameters}
+                  selectedOlt={selectedOlt}
+                  selectedOnt={selectedOnt}
+                />
             </div>
           </div>
         )}

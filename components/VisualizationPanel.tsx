@@ -8,7 +8,7 @@ import ServerIcon from './icons/ServerIcon';
 
 interface VisualizationPanelProps {
   parameters: PolDesignParameters;
-  oltDevices: OltDevice[];
+  selectedOlt?: OltDevice;
 }
 
 const SPLITTER_LOSS_MAP: { [key: string]: number } = {
@@ -21,23 +21,22 @@ const SPLITTER_LOSS_MAP: { [key: string]: number } = {
 
 const FIBER_LOSS_PER_KM = 0.35; // at 1490nm for OS2
 
-const VisualizationPanel: React.FC<VisualizationPanelProps> = ({ parameters, oltDevices }) => {
-
-  const selectedOlt = oltDevices.find(olt => olt.id === parameters.oltId);
+const VisualizationPanel: React.FC<VisualizationPanelProps> = ({ parameters, selectedOlt }) => {
 
   const calculatePowerBudget = () => {
     const totalDistanceKm = (parameters.backboneDistance + parameters.dropCableLength) / 1000;
     const fiberLoss = totalDistanceKm * FIBER_LOSS_PER_KM;
-    const splitterLoss = SPLITTER_LOSS_MAP[parameters.splitRatio];
+    const splitterLoss = SPLITTER_LOSS_MAP[parameters.splitRatio] || 0;
     const connectorLossTotal = parameters.numberOfSplices * parameters.connectorLoss;
     
     const totalLoss = fiberLoss + splitterLoss + connectorLossTotal;
-    const powerMargin = parameters.oltTxPower - totalLoss - Math.abs(parameters.ontRxSensitivity);
+    const receivedPower = parameters.oltTxPower - totalLoss;
+    const powerMargin = receivedPower - parameters.ontRxSensitivity;
     
-    return { totalLoss, powerMargin };
+    return { totalLoss, powerMargin, receivedPower };
   };
 
-  const { totalLoss, powerMargin } = calculatePowerBudget();
+  const { totalLoss, powerMargin, receivedPower } = calculatePowerBudget();
   
   const getMarginColor = () => {
     if (powerMargin < 0) return 'text-red-500';
@@ -51,8 +50,7 @@ const VisualizationPanel: React.FC<VisualizationPanelProps> = ({ parameters, olt
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg h-full flex flex-col">
       <h2 className="text-xl font-bold mb-4 text-cyan-400 border-b border-gray-700 pb-2">Network Visualization & Power Budget</h2>
       
-      {/* Power Budget Display */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 bg-gray-900/50 p-4 rounded-md">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-gray-900/50 p-4 rounded-md">
         <div className="text-center">
           <p className="text-sm text-gray-400">OLT TX Power</p>
           <p className="text-lg font-semibold text-cyan-300">{parameters.oltTxPower.toFixed(1)} dBm</p>
@@ -61,9 +59,9 @@ const VisualizationPanel: React.FC<VisualizationPanelProps> = ({ parameters, olt
           <p className="text-sm text-gray-400">Total Loss</p>
           <p className="text-lg font-semibold text-red-400">{totalLoss.toFixed(2)} dB</p>
         </div>
-        <div className="text-center">
-          <p className="text-sm text-gray-400">ONT RX Sensitivity</p>
-          <p className="text-lg font-semibold text-cyan-300">{parameters.ontRxSensitivity.toFixed(1)} dBm</p>
+         <div className="text-center">
+          <p className="text-sm text-gray-400">Est. Power at ONT</p>
+          <p className="text-lg font-semibold text-cyan-300">{receivedPower.toFixed(2)} dBm</p>
         </div>
         <div className="text-center">
           <p className="text-sm text-gray-400">Power Margin</p>
@@ -83,10 +81,10 @@ const VisualizationPanel: React.FC<VisualizationPanelProps> = ({ parameters, olt
           <div className="w-16 border-t-2 border-dashed border-gray-600"></div>
 
           {/* OLT */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center text-center">
             <OltIcon className="w-16 h-16 text-cyan-500" />
             <p className="text-sm font-semibold mt-2">{selectedOlt?.model || 'OLT'}</p>
-            <p className="text-xs text-gray-400">{parameters.ponPorts} Ports</p>
+            <p className="text-xs text-gray-400">{parameters.ponPorts} Ports ({parameters.sfpSelection})</p>
           </div>
 
           {/* Backbone Fiber */}
@@ -132,7 +130,7 @@ const VisualizationPanel: React.FC<VisualizationPanelProps> = ({ parameters, olt
        {powerMargin < 0 && (
         <div className="mt-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-center">
           <p className="font-bold text-red-400">Warning: Negative Power Margin</p>
-          <p className="text-sm text-red-300">The design is not viable. The signal is too weak to reach the ONT. Reduce losses or increase power.</p>
+          <p className="text-sm text-red-300">The design is not viable. The signal is too weak to reach the ONT. Reduce losses or select a stronger SFP module.</p>
         </div>
       )}
     </div>

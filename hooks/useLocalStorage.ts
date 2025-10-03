@@ -1,14 +1,21 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
+function useLocalStorage<T extends { id?: string }[]>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === 'undefined') {
       return initialValue;
     }
     try {
       const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
+      if (item) {
+        return JSON.parse(item);
+      } else {
+        // If no item, initialize with UUIDs and store it
+        const initialValueWithIds = initialValue.map(v => ({ ...v, id: v.id || crypto.randomUUID() })) as T;
+        window.localStorage.setItem(key, JSON.stringify(initialValueWithIds));
+        return initialValueWithIds;
+      }
     } catch (error) {
       console.error(error);
       return initialValue;

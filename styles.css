@@ -1,0 +1,39 @@
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #bom-panel, #bom-panel * {
+    visibility: visible;
+  }
+  #bom-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+    color: black !important;
+    background-color: white !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .print-hide {
+    display: none !important;
+  }
+  
+  #bom-panel h2, #bom-panel th {
+    color: black !important;
+  }
+  
+   #bom-panel td, #bom-panel p {
+    color: #333 !important;
+  }
+  
+   #bom-panel tr {
+    border-color: #ccc !important;
+   }
+   
+  #bom-panel thead {
+    background-color: #eee !important;
+  }
+}
