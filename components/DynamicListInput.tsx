@@ -1,4 +1,7 @@
 import React from 'react';
+import { useI18n } from '../contexts/I18nContext';
+// FIX: Import TranslationKeys to ensure type safety for dynamic translation keys.
+import type { TranslationKeys } from '../contexts/I18nContext';
 
 interface DynamicListInputProps<T> {
   label: string;
@@ -8,22 +11,24 @@ interface DynamicListInputProps<T> {
   renderItem: (item: T, onChange: (field: keyof T, value: any) => void) => React.ReactNode;
 }
 
-const getSingularLabel = (label: string): string => {
-    if (label.includes("گزینه‌های")) {
-        return "گزینه";
+// FIX: Specify TranslationKeys as the return type to align with the `t` function's requirements.
+const getSingularKey = (label: string): TranslationKeys => {
+    if (label.toLowerCase().includes("port")) {
+        return "generic.port";
     }
-    if (label.includes("پورت‌های")) {
-        return "پورت";
+    if (label.toLowerCase().includes("option")) {
+        return "generic.option";
     }
-    if (label.includes("قطعات")) {
-        return "قطعه";
+    if (label.toLowerCase().includes("component")) {
+        return "generic.component";
     }
-    // Fallback for simple plural 's', though not used in Persian labels
-    return label.replace(/s$/, "");
+    return "generic.item";
 }
 
 
 function DynamicListInput<T>({ label, items, onChange, newItem, renderItem }: DynamicListInputProps<T>) {
+  const { t } = useI18n();
+
   const handleAddItem = () => {
     onChange([...items, newItem]);
   };
@@ -63,7 +68,7 @@ function DynamicListInput<T>({ label, items, onChange, newItem, renderItem }: Dy
         onClick={handleAddItem}
         className="text-sm text-cyan-400 hover:text-cyan-300 font-semibold"
       >
-        + افزودن {getSingularLabel(label)}
+        {t('modal.addItem', { item: t(getSingularKey(label)) })}
       </button>
     </div>
   );

@@ -41,13 +41,26 @@
 /* Fix for Expert Mode Toggle Switch */
 .toggle-checkbox {
   @apply appearance-none;
-  transition: right 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  transition: right 0.2s ease-in-out, left 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  position: absolute;
+}
+
+[dir="ltr"] .toggle-checkbox {
   right: 1rem; /* Unchecked position */
 }
 
-.toggle-checkbox:checked {
+[dir="rtl"] .toggle-checkbox {
+  left: 1rem; /* Unchecked position */
+}
+
+[dir="ltr"] .toggle-checkbox:checked {
   right: 0rem; /* Checked position */
 }
+
+[dir="rtl"] .toggle-checkbox:checked {
+  left: 0rem; /* Checked position */
+}
+
 
 .toggle-checkbox:checked + .toggle-label {
   @apply bg-cyan-600;

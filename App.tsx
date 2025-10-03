@@ -10,8 +10,10 @@ import BillOfMaterials from './components/BillOfMaterials';
 import useLocalStorage from './hooks/useLocalStorage';
 import AuthView from './views/AuthView';
 import { authService } from './auth/authService';
+import { useI18n } from './contexts/I18nContext';
 
 const App: React.FC = () => {
+  const { t } = useI18n();
   const [user, setUser] = useState<User | null>(authService.getCurrentUser());
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
 
@@ -37,10 +39,8 @@ const App: React.FC = () => {
   });
   
   useEffect(() => {
-    // This effect ensures the app state reacts to login/logout events
     const currentUser = authService.getCurrentUser();
     setUser(currentUser);
-    // If the logged-out user was an admin, close the panel
     if (!currentUser || currentUser.role === 'user') {
       setIsAdminPanelOpen(false);
     }
@@ -54,7 +54,7 @@ const App: React.FC = () => {
   const handleLogout = () => {
     authService.logout();
     setUser(null);
-    setIsAdminPanelOpen(false); // Close admin panel on logout
+    setIsAdminPanelOpen(false);
   };
 
   const handleParameterChange = useCallback((key: keyof PolDesignParameters, value: any) => {
@@ -142,7 +142,7 @@ const App: React.FC = () => {
   const handleCatalogImport = (data: { olts: OltDevice[], onts: OntDevice[] }) => {
     setOltDevices(data.olts);
     setOntDevices(data.onts);
-    alert('Device catalog imported successfully!');
+    alert(t('importExport.importSuccess'));
   };
 
   const selectedOlt = useMemo(() => oltDevices.find(o => o.id === parameters.oltId), [oltDevices, parameters.oltId]);

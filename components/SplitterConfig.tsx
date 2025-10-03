@@ -1,5 +1,6 @@
 import React from 'react';
 import type { SplitterConfig, SplitRatio } from '../types';
+import { useI18n } from '../contexts/I18nContext';
 
 interface SplitterConfigProps {
     config: SplitterConfig;
@@ -9,6 +10,7 @@ interface SplitterConfigProps {
 const RATIO_OPTIONS: SplitRatio[] = ['1:2', '1:4', '1:8', '1:16', '1:32', '1:64'];
 
 const SplitterConfig: React.FC<SplitterConfigProps> = ({ config, onChange }) => {
+    const { t } = useI18n();
 
     const handleTypeChange = (newType: 'Centralized' | 'Cascaded') => {
         onChange({ ...config, type: newType });
@@ -27,21 +29,21 @@ const SplitterConfig: React.FC<SplitterConfigProps> = ({ config, onChange }) => 
     return (
         <div className="space-y-3 p-3 bg-gray-900/50 rounded-md">
             <div className="flex items-center justify-between">
-                <label className="block text-sm font-medium text-gray-400 mb-1">معماری اسپلیتر</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1">{t('splitterConfig.architecture')}</label>
                 <div className="flex rounded-md bg-gray-700 p-1 text-sm">
                     <button 
                         type="button"
                         onClick={() => handleTypeChange('Centralized')}
                         className={`px-3 py-1 rounded-md ${config.type === 'Centralized' ? 'bg-cyan-600 text-white' : 'text-gray-300'}`}
                     >
-                        متمرکز
+                        {t('splitterConfig.centralized')}
                     </button>
                     <button 
                         type="button"
                         onClick={() => handleTypeChange('Cascaded')}
                         className={`px-3 py-1 rounded-md ${config.type === 'Cascaded' ? 'bg-cyan-600 text-white' : 'text-gray-300'}`}
                     >
-                        آبشاری
+                        {t('splitterConfig.cascaded')}
                     </button>
                 </div>
             </div>
@@ -57,7 +59,7 @@ const SplitterConfig: React.FC<SplitterConfigProps> = ({ config, onChange }) => 
             ) : (
                 <div className="grid grid-cols-2 gap-2">
                     <div>
-                        <label className="text-xs text-gray-400">اسپلیت سطح ۱</label>
+                        <label className="text-xs text-gray-400">{t('splitterConfig.level1Split')}</label>
                          <select
                             value={config.level1Ratio}
                             onChange={e => handleRatioChange('level1Ratio', e.target.value as SplitRatio)}
@@ -67,7 +69,7 @@ const SplitterConfig: React.FC<SplitterConfigProps> = ({ config, onChange }) => 
                         </select>
                     </div>
                     <div>
-                        <label className="text-xs text-gray-400">اسپلیت سطح ۲</label>
+                        <label className="text-xs text-gray-400">{t('splitterConfig.level2Split')}</label>
                          <select
                             value={config.level2Ratio}
                             onChange={e => handleRatioChange('level2Ratio', e.target.value as SplitRatio)}
@@ -78,8 +80,8 @@ const SplitterConfig: React.FC<SplitterConfigProps> = ({ config, onChange }) => 
                     </div>
                 </div>
             )}
-            <div className={`text-left text-sm font-semibold ${isValid ? 'text-gray-400' : 'text-red-500'}`}>
-                نسبت اسپلیت کل: 1:{totalRatio} { !isValid && "(نامعتبر)"}
+            <div className={`text-end text-sm font-semibold ${isValid ? 'text-gray-400' : 'text-red-500'}`}>
+                {t('splitterConfig.totalRatio', { total: totalRatio })} { !isValid && `(${t('splitterConfig.invalid')})`}
             </div>
         </div>
     );

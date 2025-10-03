@@ -3,6 +3,8 @@ import type { OltDevice, OntDevice, User } from '../types';
 import DeviceEditModal from './DeviceEditModal';
 import ImportExport from './ImportExport';
 import UserManagement from './UserManagement';
+import TranslationEditor from './TranslationEditor';
+import { useI18n } from '../contexts/I18nContext';
 
 interface AdminPanelProps {
   currentUser: User;
@@ -16,9 +18,10 @@ interface AdminPanelProps {
   onCatalogImport: (data: { olts: OltDevice[], onts: OntDevice[] }) => void;
 }
 
-type ActiveTab = 'devices' | 'users';
+type ActiveTab = 'devices' | 'users' | 'translations';
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDevices, users, setUsers, onUpdate, onAdd, onDelete, onCatalogImport }) => {
+  const { t } = useI18n();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<OltDevice | OntDevice | null>(null);
   const [deviceType, setDeviceType] = useState<'olt' | 'ont'>('olt');
@@ -52,7 +55,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDev
 
   const handleDelete = (type: 'olt' | 'ont', deviceId: string) => {
     if (isReadonly) return;
-    if (window.confirm('آیا از حذف این دستگاه اطمینان دارید؟')) {
+    if (window.confirm(t('admin.deleteConfirm'))) {
         onDelete(type, deviceId);
     }
   }
@@ -60,20 +63,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDev
   const renderOltTable = () => (
     <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-cyan-400">تجهیزات OLT</h2>
+        <h2 className="text-xl font-bold text-cyan-400">{t('admin.oltDevices')}</h2>
         {!isReadonly && <button onClick={() => handleAddNew('olt')} className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-4 rounded-md transition-colors">
-          افزودن OLT جدید
+          {t('admin.addOlt')}
         </button>}
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm text-right text-gray-400">
+        <table className="w-full text-sm text-start text-gray-400">
           <thead className="text-xs text-gray-300 uppercase bg-gray-700">
             <tr>
-              <th scope="col" className="px-6 py-3">مدل</th>
-              <th scope="col" className="px-6 py-3">تکنولوژی</th>
-              <th scope="col" className="px-6 py-3">پورت‌های آپ‌لینک</th>
-              <th scope="col" className="px-6 py-3">توضیحات</th>
-              <th scope="col" className="px-6 py-3"><span className="sr-only">عملیات</span></th>
+              <th scope="col" className="px-6 py-3">{t('admin.table.model')}</th>
+              <th scope="col" className="px-6 py-3">{t('admin.table.technology')}</th>
+              <th scope="col" className="px-6 py-3">{t('admin.table.uplinks')}</th>
+              <th scope="col" className="px-6 py-3">{t('admin.table.description')}</th>
+              <th scope="col" className="px-6 py-3"><span className="sr-only">{t('admin.table.actions')}</span></th>
             </tr>
           </thead>
           <tbody>
@@ -83,9 +86,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDev
                 <td className="px-6 py-4">{device.technology}</td>
                 <td className="px-6 py-4">{device.uplinkPorts.map(p => `${p.count}x ${p.type}`).join(', ')}</td>
                 <td className="px-6 py-4 truncate max-w-xs">{device.description}</td>
-                <td className="px-6 py-4 text-left space-x-2 whitespace-nowrap">
-                  <button onClick={() => handleEdit(device, 'olt')} className={`font-medium ${isReadonly ? 'text-gray-500 cursor-not-allowed' : 'text-cyan-400 hover:underline'}`}>ویرایش</button>
-                  <button onClick={() => handleDelete('olt', device.id)} className={`font-medium ${isReadonly ? 'text-gray-500 cursor-not-allowed' : 'text-red-500 hover:underline'}`}>حذف</button>
+                <td className="px-6 py-4 text-end space-x-2 whitespace-nowrap">
+                  <button onClick={() => handleEdit(device, 'olt')} className={`font-medium ${isReadonly ? 'text-gray-500 cursor-not-allowed' : 'text-cyan-400 hover:underline'}`}>{t('admin.edit')}</button>
+                  <button onClick={() => handleDelete('olt', device.id)} className={`font-medium ${isReadonly ? 'text-gray-500 cursor-not-allowed' : 'text-red-500 hover:underline'}`}>{t('admin.delete')}</button>
                 </td>
               </tr>
             ))}
@@ -98,20 +101,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDev
   const renderOntTable = () => (
     <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-cyan-400">تجهیزات ONT</h2>
+        <h2 className="text-xl font-bold text-cyan-400">{t('admin.ontDevices')}</h2>
          {!isReadonly && <button onClick={() => handleAddNew('ont')} className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-4 rounded-md transition-colors">
-          افزودن ONT جدید
+          {t('admin.addOnt')}
         </button>}
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm text-right text-gray-400">
+        <table className="w-full text-sm text-start text-gray-400">
           <thead className="text-xs text-gray-300 uppercase bg-gray-700">
             <tr>
-              <th scope="col" className="px-6 py-3">مدل</th>
-              <th scope="col" className="px-6 py-3">تکنولوژی</th>
-              <th scope="col" className="px-6 py-3">پورت‌ها</th>
-              <th scope="col" className="px-6 py-3">وای‌فای</th>
-              <th scope="col" className="px-6 py-3"><span className="sr-only">عملیات</span></th>
+              <th scope="col" className="px-6 py-3">{t('admin.table.model')}</th>
+              <th scope="col" className="px-6 py-3">{t('admin.table.technology')}</th>
+              <th scope="col" className="px-6 py-3">{t('admin.table.ports')}</th>
+              <th scope="col" className="px-6 py-3">{t('admin.table.wifi')}</th>
+              <th scope="col" className="px-6 py-3"><span className="sr-only">{t('admin.table.actions')}</span></th>
             </tr>
           </thead>
           <tbody>
@@ -124,9 +127,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDev
                     {device.fxsPorts > 0 && `, ${device.fxsPorts}x FXS`}
                 </td>
                 <td className="px-6 py-4">{device.wifi ? `${device.wifi.standard} (${device.wifi.bands})` : 'N/A'}</td>
-                <td className="px-6 py-4 text-left space-x-2 whitespace-nowrap">
-                  <button onClick={() => handleEdit(device, 'ont')} className={`font-medium ${isReadonly ? 'text-gray-500 cursor-not-allowed' : 'text-cyan-400 hover:underline'}`}>ویرایش</button>
-                  <button onClick={() => handleDelete('ont', device.id)} className={`font-medium ${isReadonly ? 'text-gray-500 cursor-not-allowed' : 'text-red-500 hover:underline'}`}>حذف</button>
+                <td className="px-6 py-4 text-end space-x-2 whitespace-nowrap">
+                  <button onClick={() => handleEdit(device, 'ont')} className={`font-medium ${isReadonly ? 'text-gray-500 cursor-not-allowed' : 'text-cyan-400 hover:underline'}`}>{t('admin.edit')}</button>
+                  <button onClick={() => handleDelete('ont', device.id)} className={`font-medium ${isReadonly ? 'text-gray-500 cursor-not-allowed' : 'text-red-500 hover:underline'}`}>{t('admin.delete')}</button>
                 </td>
               </tr>
             ))}
@@ -138,14 +141,19 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDev
 
   return (
     <div className="space-y-6">
-      <div className="flex space-x-2 border-b-2 border-gray-700">
+      <div className="flex gap-2 border-b-2 border-gray-700">
         <button onClick={() => setActiveTab('devices')} className={`px-4 py-2 text-lg font-semibold ${activeTab === 'devices' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>
-          مدیریت تجهیزات
+          {t('admin.manageDevices')}
         </button>
         {currentUser.role === 'admin' && (
-           <button onClick={() => setActiveTab('users')} className={`px-4 py-2 text-lg font-semibold ${activeTab === 'users' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>
-            مدیریت کاربران
-          </button>
+           <>
+            <button onClick={() => setActiveTab('users')} className={`px-4 py-2 text-lg font-semibold ${activeTab === 'users' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>
+                {t('admin.manageUsers')}
+            </button>
+            <button onClick={() => setActiveTab('translations')} className={`px-4 py-2 text-lg font-semibold ${activeTab === 'translations' ? 'text-cyan-400 border-b-2 border-cyan-400' : 'text-gray-400'}`}>
+                {t('admin.manageTranslations')}
+            </button>
+           </>
         )}
       </div>
 
@@ -164,6 +172,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, oltDevices, ontDev
       
       {activeTab === 'users' && currentUser.role === 'admin' && (
           <UserManagement users={users} setUsers={setUsers} />
+      )}
+
+      {activeTab === 'translations' && currentUser.role === 'admin' && (
+          <TranslationEditor />
       )}
 
       {modalOpen && (

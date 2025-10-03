@@ -13,7 +13,7 @@ const ParameterGroup: React.FC<ParameterGroupProps> = ({ title, children, defaul
     <div className="bg-gray-900/50 rounded-lg">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex justify-between items-center p-3 text-right font-bold text-cyan-400 hover:bg-gray-700/50 rounded-t-lg transition-colors"
+        className="w-full flex justify-between items-center p-3 text-start font-bold text-cyan-400 hover:bg-gray-700/50 rounded-t-lg transition-colors"
       >
         <span>{title}</span>
         <svg

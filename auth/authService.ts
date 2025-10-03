@@ -1,17 +1,17 @@
 import type { User, UserRole } from '../types';
-import useLocalStorage from '../hooks/useLocalStorage';
-
-// This is a client-side simulation of an authentication service.
-// In a real application, these functions would make API calls to a secure backend.
+// FIX: Import TranslationKeys to provide type safety for auth result messages.
+import type { TranslationKeys } from '../contexts/I18nContext';
 
 const USERS_KEY = 'users';
 const SESSION_KEY = 'currentUser';
 const VERIFICATION_CODE_KEY = 'verificationCode';
 
-// A simple hash function simulation (DO NOT USE IN PRODUCTION)
 const pseudoHash = (password: string): string => {
   return `hashed_${password}_${password.split('').reverse().join('')}`;
 };
+
+// FIX: Update messageKey to use TranslationKeys type and export AuthResult for use in other components.
+export type AuthResult = { success: boolean, messageKey: TranslationKeys, user?: User | null };
 
 class AuthService {
   private users: User[] = [];
@@ -22,7 +22,6 @@ class AuthService {
     const storedUsers = localStorage.getItem(USERS_KEY);
     this.users = storedUsers ? JSON.parse(storedUsers) : [];
     
-    // Create a default admin if none exists
     if (this.users.length === 0) {
         const adminUser: User = {
             id: crypto.randomUUID(),
@@ -44,9 +43,9 @@ class AuthService {
     this.currentUser = storedSession ? JSON.parse(storedSession) : null;
   }
   
-  register(email: string, password: string): { success: boolean, message: string } {
+  register(email: string, password: string): Omit<AuthResult, 'user'> {
     if (this.users.find(u => u.email === email)) {
-      return { success: false, message: 'کاربری با این ایمیل قبلا ثبت نام کرده است.' };
+      return { success: false, messageKey: 'auth.error.emailExists' };
     }
     
     const newUser: User = {
@@ -59,23 +58,22 @@ class AuthService {
     
     this.setUsers([...this.users, newUser]);
     
-    // Simulate sending a verification code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     localStorage.setItem(`${VERIFICATION_CODE_KEY}_${email}`, code);
-    console.log(`Verification code for ${email}: ${code}`); // Log to console for simulation
+    console.log(`Verification code for ${email}: ${code}`);
     
-    return { success: true, message: 'ثبت نام موفقیت آمیز بود. لطفا کنسول خود را برای کد تایید بررسی کنید.' };
+    return { success: true, messageKey: 'auth.success.register' };
   }
   
-  verify(email: string, code: string): { success: boolean, message: string } {
+  verify(email: string, code: string): Omit<AuthResult, 'user'> {
     const storedCode = localStorage.getItem(`${VERIFICATION_CODE_KEY}_${email}`);
     if (!storedCode || storedCode !== code) {
-      return { success: false, message: 'کد تایید نامعتبر است.' };
+      return { success: false, messageKey: 'auth.error.invalidCode' };
     }
 
     const userIndex = this.users.findIndex(u => u.email === email);
     if (userIndex === -1) {
-       return { success: false, message: 'کاربر یافت نشد.' };
+       return { success: false, messageKey: 'auth.error.userNotFound' };
     }
 
     const updatedUsers = [...this.users];
@@ -84,28 +82,28 @@ class AuthService {
 
     localStorage.removeItem(`${VERIFICATION_CODE_KEY}_${email}`);
     
-    return { success: true, message: 'حساب کاربری با موفقیت تایید شد. اکنون می‌توانید وارد شوید.' };
+    return { success: true, messageKey: 'auth.success.verify' };
   }
 
-  login(email: string, password: string): { success: boolean, message: string, user: User | null } {
+  login(email: string, password: string): AuthResult {
     const user = this.users.find(u => u.email === email);
     
     if (!user) {
-      return { success: false, message: 'ایمیل یا رمز عبور نامعتبر است.', user: null };
+      return { success: false, messageKey: 'auth.error.invalidCredentials', user: null };
     }
     
     if (!user.verified) {
-        return { success: false, message: 'حساب کاربری تایید نشده است. لطفا کنسول خود را برای کد تایید بررسی کنید.', user: null };
+        return { success: false, messageKey: 'auth.error.notVerified', user: null };
     }
     
     if (user.passwordHash !== pseudoHash(password)) {
-      return { success: false, message: 'ایمیل یا رمز عبور نامعتبر است.', user: null };
+      return { success: false, messageKey: 'auth.error.invalidCredentials', user: null };
     }
     
     this.currentUser = user;
     localStorage.setItem(SESSION_KEY, JSON.stringify(user));
     
-    return { success: true, message: 'ورود موفقیت آمیز بود.', user };
+    return { success: true, messageKey: 'auth.success.login', user };
   }
   
   logout(): void {
@@ -117,44 +115,43 @@ class AuthService {
     return this.currentUser;
   }
   
-  // Admin functions
   getAllUsers(): User[] {
     return this.users;
   }
 
-  addUser(email: string, password: string, role: UserRole): { success: boolean, message: string } {
+  addUser(email: string, password: string, role: UserRole): Omit<AuthResult, 'user'> {
     if (this.users.find(u => u.email === email)) {
-        return { success: false, message: 'کاربری با این ایمیل قبلا ثبت نام کرده است.' };
+        return { success: false, messageKey: 'auth.error.emailExists' };
     }
      const newUser: User = {
       id: crypto.randomUUID(),
       email,
       passwordHash: pseudoHash(password),
       role,
-      verified: true, // Admins create verified users
+      verified: true,
     };
     this.setUsers([...this.users, newUser]);
-    return { success: true, message: 'کاربر با موفقیت اضافه شد.' };
+    return { success: true, messageKey: 'auth.success.userAdded' };
   }
 
-  updateUser(updatedUser: User): { success: boolean, message: string } {
+  updateUser(updatedUser: User): Omit<AuthResult, 'user'> {
       const userIndex = this.users.findIndex(u => u.id === updatedUser.id);
       if (userIndex === -1) {
-          return { success: false, message: 'کاربر یافت نشد.' };
+          return { success: false, messageKey: 'auth.error.userNotFound' };
       }
       const updatedUsers = [...this.users];
       updatedUsers[userIndex] = updatedUser;
       this.setUsers(updatedUsers);
-      return { success: true, message: 'کاربر به‌روزرسانی شد.' };
+      return { success: true, messageKey: 'auth.success.userUpdated' };
   }
   
-  deleteUser(userId: string): { success: boolean, message: string } {
+  deleteUser(userId: string): Omit<AuthResult, 'user'> {
       const updatedUsers = this.users.filter(u => u.id !== userId);
       if (updatedUsers.length === this.users.length) {
-           return { success: false, message: 'کاربر یافت نشد.' };
+           return { success: false, messageKey: 'auth.error.userNotFound' };
       }
       this.setUsers(updatedUsers);
-      return { success: true, message: 'کاربر حذف شد.' };
+      return { success: true, messageKey: 'auth.success.userDeleted' };
   }
 }
 

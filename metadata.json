@@ -1,5 +1,5 @@
 {
-  "name": "(نسخه فارسی) Noorano طراح شبکه GPON",
-  "description": "ابزاری جامع برای طراحی و مصورسازی شبکه‌های نوری پسیو (POL). تمام پارامترهای ممکن از OLT تا ONT را پیکربندی کرده و دیاگرام شبکه پویا را به همراه تحلیل آنی بودجه توان مشاهده کنید.",
+  "name": "POL Network Designer (GPON)",
+  "description": "A comprehensive tool for designing and visualizing Passive Optical LAN (POL) networks. Configure all possible parameters from OLT to ONT and view the dynamic network diagram with real-time power budget analysis.",
   "requestFramePermissions": []
 }
