@@ -54,7 +54,7 @@ router.put('/:id/role', async (req, res) => {
         return res.status(404).json({ messageKey: 'auth.error.userNotFound' });
     }
     // Prevent self-demotion or changing the main admin
-    if (user.email === 'admin@pol.designer') {
+    if (user.email === 'admin@noorao.designer') {
         return res.status(403).json({ message: 'Cannot change role of default admin' });
     }
 

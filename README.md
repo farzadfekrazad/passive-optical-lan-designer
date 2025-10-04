@@ -1,6 +1,6 @@
-# Passive Optical LAN (POL) Network Designer
+# Noorao Gpon Net Designer
 
-This is a comprehensive tool for designing and visualizing Passive Optical LAN (POL) networks. It allows you to configure all possible parameters from the Optical Line Terminal (OLT) to the Optical Network Terminal (ONT) and view a dynamic network diagram with real-time power budget analysis.
+This is a comprehensive tool for designing and visualizing GPON networks. It allows you to configure all possible parameters from the Optical Line Terminal (OLT) to the Optical Network Terminal (ONT) and view a dynamic network diagram with real-time power budget analysis.
 
 The application features a React-based frontend and a Node.js/Express backend, all containerized with Docker for easy setup and deployment.
 
@@ -58,7 +58,7 @@ This is the easiest and most reliable way to get the application running on your
 
 A default administrator account is created when the database is first initialized. Use these credentials to log in and access the Admin Panel:
 
--   **Email**: `admin@pol.designer`
+-   **Email**: `admin@noorao.designer`
 -   **Password**: `admin123`
 
 ### Managing the Application
@@ -98,7 +98,7 @@ The `docker-compose.yml` file defines and orchestrates two services:
 1.  **`backend`**:
     -   Builds the Node.js/Express server from `server/Dockerfile`.
     -   Installs all dependencies, compiles the TypeScript code, and starts the server.
-    -   Creates and uses a SQLite database file (`pol_designer.db`) which is stored inside the `server` directory on your host machine, so your data persists even if you stop and remove the containers.
+    -   Creates and uses a SQLite database file (`noorao_gpon_designer.db`) which is stored inside the `server` directory on your host machine, so your data persists even if you stop and remove the containers.
 
 2.  **`frontend`**:
     -   Builds the React frontend application from the root `Dockerfile`.
