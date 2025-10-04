@@ -2,7 +2,7 @@ import knex, { Knex } from 'knex';
 import path from 'path';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
-import { initialOltDevices, initialOntDevices } from './data/initialData';
+import { initialOltDevices, initialOntDevices } from './data/initialData.js';
 import { fileURLToPath } from 'url';
 
 // This path resolves to a 'database' directory inside the container, which is mounted as a volume.

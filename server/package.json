@@ -3,6 +3,7 @@
   "name": "pol-designer-server",
   "version": "1.0.0",
   "description": "Backend server for the POL Designer application",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

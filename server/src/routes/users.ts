@@ -2,9 +2,9 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
-import { db } from '../db';
-import { User, UserRole } from '../types';
-import { adminOnly } from '../authMiddleware';
+import { db } from '../db.js';
+import { User, UserRole } from '../types.js';
+import { adminOnly } from '../authMiddleware.js';
 
 const router = Router();
 

@@ -75,6 +75,22 @@ A default administrator account is created when the database is first initialize
     docker-compose up
     ```
 
+### Development Workflow
+
+- Rebuild and restart containers after code changes:
+  ```bash
+  docker compose up --build
+  ```
+- Watch logs to verify startup and diagnose issues:
+  ```bash
+  docker compose logs -f
+  ```
+- Common ports:
+  - Frontend UI: `http://localhost:5173`
+  - Backend API: `http://localhost:3001`
+
+If the backend shows module resolution errors at runtime, ensure backend imports use explicit `.js` extensions for local modules (e.g., `import { db } from '../db.js'`).
+
 ### How It Works
 
 The `docker-compose.yml` file defines and orchestrates two services:
