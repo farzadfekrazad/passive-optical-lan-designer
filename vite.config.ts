@@ -6,9 +6,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    host: true, // Needed for Docker container port mapping
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        // This should match the service name in docker-compose.yml
+        target: 'http://backend:3001',
         changeOrigin: true,
       }
     }

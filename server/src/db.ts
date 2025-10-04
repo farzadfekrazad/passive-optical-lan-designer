@@ -1,8 +1,13 @@
-
 import knex, { Knex } from 'knex';
 import path from 'path';
+// FIX: Import 'url' to resolve '__dirname' in an ES module environment.
+import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import { initialOltDevices, initialOntDevices } from './data/initialData';
+
+// FIX: Define '__dirname' for ES module scope.
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const dbPath = path.resolve(__dirname, '../pol_designer.db');
 
