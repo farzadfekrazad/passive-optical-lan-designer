@@ -109,3 +109,32 @@ The `docker-compose.yml` file defines and orchestrates two services:
 ---
 
 This setup ensures that you have a consistent development and production environment without needing to manually install Node.js, dependencies, or configure a web server on your host machine.
+
+**Deploy to Google AI Studio App Builder**
+- Overview: Import this GitHub repo and deploy the frontend, with the backend deployed separately (recommended) or via container.
+- Prereqs: Ensure main is up to date and .gitignore excludes server/database/*.db.
+
+- Frontend (recommended, static hosting):
+  - Import from GitHub and select this repository.
+  - Build command: 
+pm ci && npm run build.
+  - Start command (Node serve): 
+px serve -s dist -l 8080.
+  - Static hosting alternative: Use the provided Dockerfile + 
+ginx.conf to serve dist/.
+  - API calls: The dev proxy in ite.config.ts is only for local dev. In production, point /api to your backend service URL. If using Nginx, update 
+ginx.conf proxy_pass target to your backend URL.
+
+- Backend (separate service):
+  - Build and deploy the backend using server/Dockerfile to a runtime like Cloud Run.
+  - Expose http on port 3001.
+  - Set environment variables as needed (e.g., SMTP); database file resides inside the container.
+
+- Docker Compose (alternative, single host):
+  - If the platform supports Docker Compose, use docker compose up --build.
+  - Frontend publishes 5173 (Nginx), backend publishes 3001.
+
+- Verify:
+  - Frontend: Access the App URL and confirm UI loads.
+  - Backend: Test GET /api/settings and POST /api/auth/login.
+  - CORS: If the frontend is hosted on a different origin, enable CORS on the backend or proxy /api via Nginx.
