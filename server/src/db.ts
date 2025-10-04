@@ -5,13 +5,12 @@ import fs from 'fs';
 import { initialOltDevices, initialOntDevices } from './data/initialData';
 import { fileURLToPath } from 'url';
 
-// FIX: Define __dirname for ES module scope, as it's not available by default.
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // This path resolves to a 'database' directory inside the container, which is mounted as a volume.
 // For CommonJS modules, __dirname is a global variable pointing to the directory of the current script.
 // In our built server, the script will be in /usr/src/app/dist, so we go up one level.
+// FIX: __dirname is not available in ES modules by default. Recreate it using import.meta.url.
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const dbDirectory = path.resolve(__dirname, '../database');
 
 // Ensure the database directory exists within the container before trying to connect

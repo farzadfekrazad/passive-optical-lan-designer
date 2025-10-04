@@ -4,7 +4,9 @@ import { User } from './types';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key';
 
-// FIX: Changed AuthenticatedRequest to an interface that extends the Express Request type. This resolves errors where properties like 'headers', 'body', and 'params' were not found.
+// FIX: Define AuthenticatedRequest as an interface that extends the base Express Request type.
+// This ensures that all properties of Request (like headers, body, params) are available,
+// while also adding the custom 'user' property. This resolves type errors in this file and in route handlers.
 export interface AuthenticatedRequest extends Request {
     user?: User;
 }
