@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { db } from '../db';
 import { SmtpConfig } from '../types';
 import { adminOnly } from '../authMiddleware';
-import faDefaults from '../../../i18n/locales/fa';
+import faDefaults from '../i18n/locales/fa';
 
 const router = Router();
 

@@ -1,6 +1,6 @@
-
 import express from 'express';
 import cors from 'cors';
+// FIX: Import the 'process' module to provide type definitions for 'process.exit'.
 import process from 'process';
 import { initializeDatabase } from './db';
 
@@ -8,7 +8,7 @@ import authRoutes from './routes/auth';
 import deviceRoutes from './routes/devices';
 import userRoutes from './routes/users';
 import settingsRoutes from './routes/settings';
-import { authMiddleware } from './authMiddleware';
+import { authMiddleware, adminOnly } from './authMiddleware';
 
 const app = express();
 const port = 3001;
@@ -30,6 +30,5 @@ initializeDatabase().then(() => {
   });
 }).catch(error => {
     console.error("Failed to initialize database:", error);
-    // FIX: Add type definition for process by importing it.
     process.exit(1);
 });

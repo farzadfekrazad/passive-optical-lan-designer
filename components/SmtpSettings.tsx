@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import type { SmtpConfig } from '../types';
 import { useI18n } from '../contexts/I18nContext';
@@ -19,7 +20,7 @@ const SmtpSettings: React.FC = () => {
         const fetchSmtpConfig = async () => {
             setIsLoading(true);
             try {
-                const res = await fetch('http://localhost:3001/api/settings/smtp', {
+                const res = await fetch('/api/settings/smtp', {
                     headers: authService.getAuthHeaders(),
                 });
                 if (res.ok) {
@@ -48,7 +49,7 @@ const SmtpSettings: React.FC = () => {
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         setMessage(null);
-        const res = await fetch('http://localhost:3001/api/settings/smtp', {
+        const res = await fetch('/api/settings/smtp', {
             method: 'POST',
             headers: { ...authService.getAuthHeaders(), 'Content-Type': 'application/json' },
             body: JSON.stringify(config),

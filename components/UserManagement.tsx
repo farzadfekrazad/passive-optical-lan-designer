@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import type { User, UserRole } from '../types';
 import { authService } from '../auth/authService';
@@ -20,7 +21,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ initialUsers }) => {
     }, [initialUsers]);
 
     const fetchUsers = async () => {
-        const res = await fetch('http://localhost:3001/api/users', { headers: authService.getAuthHeaders() });
+        const res = await fetch('/api/users', { headers: authService.getAuthHeaders() });
         if(res.ok) {
             const data = await res.json();
             setUsers(data);
@@ -30,7 +31,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ initialUsers }) => {
     const handleAddUser = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        const res = await fetch('http://localhost:3001/api/users', {
+        const res = await fetch('/api/users', {
             method: 'POST',
             headers: { ...authService.getAuthHeaders(), 'Content-Type': 'application/json' },
             body: JSON.stringify(newUser)
@@ -47,7 +48,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ initialUsers }) => {
 
     const handleDeleteUser = async (userId: string) => {
         if(window.confirm(t('userManagement.deleteConfirm'))) {
-            const res = await fetch(`http://localhost:3001/api/users/${userId}`, {
+            const res = await fetch(`/api/users/${userId}`, {
                 method: 'DELETE',
                 headers: authService.getAuthHeaders()
             });
@@ -61,7 +62,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ initialUsers }) => {
     }
 
     const handleRoleChange = async (userId: string, newRole: UserRole) => {
-        const res = await fetch(`http://localhost:3001/api/users/${userId}/role`, {
+        const res = await fetch(`/api/users/${userId}/role`, {
             method: 'PUT',
             headers: { ...authService.getAuthHeaders(), 'Content-Type': 'application/json' },
             body: JSON.stringify({ role: newRole })

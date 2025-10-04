@@ -26,9 +26,9 @@ const App: React.FC = () => {
     try {
       setIsLoading(true);
       const [devicesRes, usersRes] = await Promise.all([
-        fetch('http://localhost:3001/api/devices', { headers: authService.getAuthHeaders() }),
+        fetch('/api/devices', { headers: authService.getAuthHeaders() }),
         authService.getCurrentUser()?.role === 'admin' 
-            ? fetch('http://localhost:3001/api/users', { headers: authService.getAuthHeaders() })
+            ? fetch('/api/users', { headers: authService.getAuthHeaders() })
             : Promise.resolve(null)
       ]);
 
@@ -143,7 +143,7 @@ const App: React.FC = () => {
   }, [oltDevices, ontDevices, parameters]);
 
   const handleDeviceUpdate = async (type: 'olt' | 'ont', device: OltDevice | OntDevice) => {
-    const res = await fetch(`http://localhost:3001/api/devices/${type}s/${device.id}`, {
+    const res = await fetch(`/api/devices/${type}s/${device.id}`, {
         method: 'PUT',
         headers: { ...authService.getAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify(device),
@@ -159,7 +159,7 @@ const App: React.FC = () => {
   };
 
   const handleDeviceAdd = async (type: 'olt' | 'ont', device: Omit<OltDevice, 'id'> | Omit<OntDevice, 'id'>) => {
-    const res = await fetch(`http://localhost:3001/api/devices/${type}s`, {
+    const res = await fetch(`/api/devices/${type}s`, {
         method: 'POST',
         headers: { ...authService.getAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify(device),
@@ -175,7 +175,7 @@ const App: React.FC = () => {
   };
 
   const handleDeviceDelete = async (type: 'olt' | 'ont', deviceId: string) => {
-    const res = await fetch(`http://localhost:3001/api/devices/${type}s/${deviceId}`, {
+    const res = await fetch(`/api/devices/${type}s/${deviceId}`, {
         method: 'DELETE',
         headers: authService.getAuthHeaders(),
     });
@@ -202,7 +202,7 @@ const App: React.FC = () => {
   
   const handleCatalogImport = async (data: { olts: OltDevice[], onts: OntDevice[] }) => {
     try {
-        const res = await fetch('http://localhost:3001/api/devices/catalog', {
+        const res = await fetch('/api/devices/catalog', {
             method: 'POST',
             headers: { ...authService.getAuthHeaders(), 'Content-Type': 'application/json' },
             body: JSON.stringify(data),

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useI18n } from '../contexts/I18nContext';
 import faDefaults from '../i18n/locales/fa';
@@ -13,7 +14,7 @@ const TranslationEditor: React.FC = () => {
   
   const fetchTranslations = async () => {
     setIsLoading(true);
-    const res = await fetch('http://localhost:3001/api/settings/translations/fa', {
+    const res = await fetch('/api/settings/translations/fa', {
         headers: authService.getAuthHeaders(),
     });
     if (res.ok) {
@@ -32,7 +33,7 @@ const TranslationEditor: React.FC = () => {
 
 
   const handleSave = async () => {
-    const res = await fetch('http://localhost:3001/api/settings/translations/fa', {
+    const res = await fetch('/api/settings/translations/fa', {
         method: 'POST',
         headers: { ...authService.getAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify(translations),
@@ -47,7 +48,7 @@ const TranslationEditor: React.FC = () => {
 
   const handleReset = async () => {
       if (window.confirm(t('translationEditor.resetConfirm'))) {
-          const res = await fetch('http://localhost:3001/api/settings/translations/fa', {
+          const res = await fetch('/api/settings/translations/fa', {
             method: 'DELETE',
             headers: authService.getAuthHeaders(),
           });

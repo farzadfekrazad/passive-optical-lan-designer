@@ -1,14 +1,13 @@
-
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from './types';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key';
 
-// FIX: Changed AuthenticatedRequest from an interface to a type alias to correctly extend the Express Request type. This resolves errors where properties like 'headers', 'body', and 'params' were not found.
-export type AuthenticatedRequest = Request & {
+// FIX: Changed AuthenticatedRequest to an interface that extends the Express Request type. This resolves errors where properties like 'headers', 'body', and 'params' were not found.
+export interface AuthenticatedRequest extends Request {
     user?: User;
-};
+}
 
 export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;

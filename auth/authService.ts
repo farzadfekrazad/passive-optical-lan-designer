@@ -1,4 +1,5 @@
 
+
 import type { User } from '../types';
 import type { TranslationKeys } from '../contexts/I18nContext';
 
@@ -16,7 +17,7 @@ type Session = {
     token: string;
 }
 
-const API_BASE_URL = 'http://localhost:3001/api/auth';
+const API_BASE_URL = '/api/auth';
 
 class AuthService {
   private session: Session | null = null;

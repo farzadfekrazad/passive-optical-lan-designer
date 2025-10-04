@@ -1,13 +1,9 @@
 
 import knex, { Knex } from 'knex';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
-import { initialOltDevices, initialOntDevices } from '../../data/eltexDevices'; // reusing from frontend
+import { initialOltDevices, initialOntDevices } from './data/initialData';
 
-// FIX: Define `__dirname` which is not available in ES modules, to correctly resolve the database path.
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const dbPath = path.resolve(__dirname, '../pol_designer.db');
 
 export const db: Knex = knex({
