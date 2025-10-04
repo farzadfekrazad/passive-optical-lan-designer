@@ -4,8 +4,9 @@ import bcrypt from 'bcryptjs';
 import { initialOltDevices, initialOntDevices } from './data/initialData';
 import { fileURLToPath } from 'url';
 
-// FIX: `__dirname` is not available in ES modules. This calculates it from `import.meta.url`.
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// FIX: In an ES module, __dirname is not available by default. This creates it.
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const dbPath = path.resolve(__dirname, '../pol_designer.db');
 
 export const db: Knex = knex({
