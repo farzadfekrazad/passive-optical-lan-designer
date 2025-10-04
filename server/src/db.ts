@@ -1,13 +1,25 @@
 import knex, { Knex } from 'knex';
 import path from 'path';
 import bcrypt from 'bcryptjs';
+import fs from 'fs';
 import { initialOltDevices, initialOntDevices } from './data/initialData';
 import { fileURLToPath } from 'url';
 
-// FIX: In an ES module, __dirname is not available by default. This creates it.
+// FIX: Define __dirname for ES module scope, as it's not available by default.
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const dbPath = path.resolve(__dirname, '../pol_designer.db');
+
+// This path resolves to a 'database' directory inside the container, which is mounted as a volume.
+// For CommonJS modules, __dirname is a global variable pointing to the directory of the current script.
+// In our built server, the script will be in /usr/src/app/dist, so we go up one level.
+const dbDirectory = path.resolve(__dirname, '../database');
+
+// Ensure the database directory exists within the container before trying to connect
+if (!fs.existsSync(dbDirectory)) {
+  fs.mkdirSync(dbDirectory, { recursive: true });
+}
+
+const dbPath = path.resolve(dbDirectory, 'pol_designer.db');
 
 export const db: Knex = knex({
   client: 'sqlite3',

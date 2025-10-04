@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build:
@@ -8,7 +6,8 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      - ./server/pol_designer.db:/usr/src/app/dist/pol_designer.db
+      # Mount a directory for the database to ensure it persists correctly
+      - ./server/database:/usr/src/app/database
     restart: unless-stopped
     container_name: pol_designer_backend
 
