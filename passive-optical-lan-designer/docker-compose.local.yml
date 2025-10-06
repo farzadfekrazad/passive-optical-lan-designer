@@ -1,0 +1,7 @@
+services:
+  backend:
+    ports:
+      - "4001:4001"
+  frontend:
+    ports:
+      - "5180:80"
