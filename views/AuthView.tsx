@@ -126,10 +126,6 @@ const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
             <p className="text-center text-sm text-gray-400">
               {t('auth.noAccount')} <button type="button" onClick={() => setMode('register')} className="font-semibold text-cyan-400 hover:underline">{t('auth.registerLink')}</button>
             </p>
-             <div className="text-xs text-center text-gray-500 pt-4">
-                <p>{t('auth.defaultAdmin')} <span className="font-mono">admin@noorao.designer</span></p>
-                <p>{t('auth.passwordLabel')} <span className="font-mono">admin123</span></p>
-            </div>
           </form>
         );
     }
