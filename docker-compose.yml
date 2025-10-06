@@ -21,7 +21,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "5180:80"
+      - "80:80"
     depends_on:
       backend:
         condition: service_healthy
