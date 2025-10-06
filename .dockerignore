@@ -1,0 +1,13 @@
+# Exclude unnecessary files from Docker build context (frontend)
+node_modules/
+dist/
+.git/
+.gitignore
+Dockerfile
+README.md
+MANUAL.md
+docs/
+server/
+*.log
+*.DS_Store
+Thumbs.db

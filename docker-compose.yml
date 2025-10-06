@@ -3,11 +3,19 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+    environment:
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET}
     ports:
       - "3001:3001"
     volumes:
-      # Mount a directory for the database to ensure it persists correctly
-      - ./server/database:/usr/src/app/database
+      # Use a named volume for database persistence across code updates
+      - db_data:/usr/src/app/database
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
     container_name: noorao_gpon_designer_backend
 
@@ -18,6 +26,10 @@ services:
     ports:
       - "5173:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
     container_name: noorao_gpon_designer_frontend
+
+volumes:
+  db_data:

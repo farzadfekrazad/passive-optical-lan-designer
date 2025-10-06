@@ -11,12 +11,15 @@ import settingsRoutes from './routes/settings.js';
 import { authMiddleware, adminOnly } from './authMiddleware.js';
 
 const app = express();
-const port = 3001;
+const port = Number(process.env.PORT) || 3001;
 
 app.use(cors());
 app.use(express.json());
 
 // Public routes
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 app.use('/api/auth', authRoutes);
 
 // Protected routes

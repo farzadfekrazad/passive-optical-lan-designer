@@ -1,1 +1,9 @@
-��^�j�W�v+-��u�"�w��z{
+node_modules/
+dist/
+.git/
+.gitignore
+Dockerfile
+database/
+*.log
+*.DS_Store
+Thumbs.db
